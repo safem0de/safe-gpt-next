@@ -16,4 +16,5 @@ D:\Nextjs>npx create-next-app@latest
 components/Navbar.tsx
 
 ### NO SQL database (connection)
+npm i mongoose
 mongodb://root:example@localhost:32017

@@ -6,7 +6,8 @@ export const TH = {
     search : "ค้นหา...",
     hiddensidebar : "ซ่อนแถบด้านข้าง",
     createnewchat : "สร้างแชทใหม่",
-    logout : "ลงชื่อออก"
+    logout : "ลงชื่อออก",
+    submit : "ส่งคำถาม"
 }
 
 export const EN = {
@@ -17,5 +18,6 @@ export const EN = {
     search : "Searching...",
     hiddensidebar : "Hide Sidebar",
     createnewchat : "Create New Chat",
-    logout : "Logout"
+    logout : "Logout",
+    submit : "Submit"
 }
