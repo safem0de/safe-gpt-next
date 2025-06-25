@@ -18,3 +18,5 @@ components/Navbar.tsx
 ### NO SQL database (connection)
 npm i mongoose
 mongodb://root:example@localhost:32017
+
+https://ai-sdk.dev/docs/reference/ai-sdk-ui/convert-to-core-messages
