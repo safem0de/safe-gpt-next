@@ -1,5 +1,7 @@
 "use client";
 import { useRef, useState, useEffect } from "react";
+import { TH, EN } from "@/constants/lang";
+import { useLang } from "@/contexts/LangContext";
 
 interface MenuItem {
   label: string;
@@ -24,6 +26,8 @@ export default function AvatarDropdown({
 }: AvatarDropdownProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { lang } = useLang();
+  const t = lang === "th" ? TH : EN;
 
   // ปิด dropdown ถ้าคลิกข้างนอก
   useEffect(() => {
@@ -67,7 +71,7 @@ export default function AvatarDropdown({
             onClick={onLogout}
             className="flex w-full items-center gap-2 px-4 py-2 text-left text-red-500 hover:bg-gray-100"
           >
-            <span>ลงชื่อออก</span>
+            <span>{t.logout}</span>
           </button>
         </div>
       )}

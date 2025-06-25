@@ -1,17 +1,18 @@
-// Sidebar.tsx
 "use client";
+import { TH, EN } from "@/constants/lang";
+import { useLang } from "@/contexts/LangContext";
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBars,
-  faTimes,
-  faPlus,
   faComments,
   faBackward,
 } from "@fortawesome/free-solid-svg-icons";
 
 export default function Sidebar() {
   const [open, setOpen] = useState(true);
+  const { lang } = useLang();
+  const t = lang === "th" ? TH : EN;
 
   return (
     <aside
@@ -30,16 +31,16 @@ export default function Sidebar() {
           onClick={() => setOpen((v) => !v)}
         >
           <FontAwesomeIcon icon={open ? faBackward : faBars} />
-          {open && "ซ่อนแถบข้าง"}
+          {open && t.hiddensidebar}
         </button>
       </div>
       <div className="p-3 flex-1 overflow-y-auto">
         <button
           className="w-full px-2 py-2 rounded hover:bg-gray-100 text-left text-gray-800 flex items-center gap-2 cursor-pointer"
-          onClick={() => alert("สร้างแชทใหม่")}
+          onClick={() => alert(t.createnewchat)}
         >
           <FontAwesomeIcon icon={faComments} />
-          {open && "แชทใหม่"}
+          {open && t.createnewchat}
         </button>
         <hr className="my-3" />
         <div className="text-xs text-gray-500 mb-2">{open && "ประวัติแชท"}</div>

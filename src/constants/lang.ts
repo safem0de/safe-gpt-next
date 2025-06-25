@@ -5,6 +5,8 @@ export const TH = {
     noData : "ไม่มีข้อมูล",
     search : "ค้นหา...",
     hiddensidebar : "ซ่อนแถบด้านข้าง",
+    createnewchat : "สร้างแชทใหม่",
+    logout : "ลงชื่อออก"
 }
 
 export const EN = {
@@ -14,4 +16,6 @@ export const EN = {
     noData : "No Data",
     search : "Searching...",
     hiddensidebar : "Hide Sidebar",
+    createnewchat : "Create New Chat",
+    logout : "Logout"
 }

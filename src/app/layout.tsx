@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+import { LangProvider } from "@/contexts/LangContext";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,12 +32,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <LangProvider>
         <Navbar />
         <div className="flex flex-row h-[calc(100vh-4rem)]">
           {/* 4rem คือประมาณ h-16 ของ Navbar */}
           <Sidebar />
           <main className="flex-1 p-6 overflow-y-auto">{children}</main>
         </div>
+        </LangProvider>
       </body>
     </html>
   );

@@ -14,3 +14,6 @@ D:\Nextjs>npx create-next-app@latest
 
 ### สร้าง Navbar
 components/Navbar.tsx
+
+### NO SQL database (connection)
+mongodb://root:example@localhost:32017
