@@ -5,67 +5,12 @@ import { useLang } from "@/contexts/LangContext";
 import { TH, EN } from "@/constants/lang";
 
 export default function ChatArea() {
-  // ใช้ useChat แต่ไม่ใช้ handleSubmit ตรงๆ
+  // /* ใช้ useChat แต่ไม่ใช้ handleSubmit ตรงๆ */
   const { messages, append } = useChat({});
   const { lang } = useLang();
   const t = lang === "th" ? TH : EN;
 
-  // ฟังก์ชันรับจาก ChatInput
-  // const handleSend = async ({
-  //   text,
-  //   imageFile,
-  // }: {
-  //   text?: string;
-  //   imageFile?: File;
-  // }) => {
-  //   // case 1: ข้อความล้วน
-  //   if (text && !imageFile) {
-  //     console.log("Text only:", text);
-  //     await append({ role: "user", content: text });
-  //     return;
-  //   }
-
-  //   // case 2: รูปอย่างเดียว หรือ รูป+ข้อความ
-  //   if (imageFile) {
-  //     const reader = new FileReader();
-  //     reader.onload = async (e) => {
-  //       const base64 = e.target?.result as string;
-  //       // --- DEBUG ---
-  //       console.log(
-  //         "ChatArea: Base64 string generated:",
-  //         base64.substring(0, 100) + "..."
-  //       ); // แสดงแค่ส่วนหัวพอ
-  //       // -------------
-
-  //       // case 2.1: รูป + ข้อความ
-  //       if (text) {
-  //         console.log("Text:", text);
-  //         console.log("Image file:", imageFile);
-  //         console.log("Base64 string:", base64);
-  //         // ส่งข้อความและรูปภาพ
-  //         await append({
-  //           role: "user",
-  //           content: [
-  //             { type: "text", text },
-  //             { type: "image", image: base64, mimeType: imageFile.type },
-  //           ] as any,
-  //         });
-  //       } else {
-  //         // case 2.2: รูปอย่างเดียว
-  //         console.log("Image file (Only):", imageFile);
-  //         console.log("Base64 string:", base64);
-  //         await append({
-  //           role: "user",
-  //           content: [
-  //             { type: "image", image: base64, mimeType: imageFile.type },
-  //           ] as any,
-  //         });
-  //       }
-
-  //     };
-  //     reader.readAsDataURL(imageFile);
-  //   }
-  // };
+  // /* ฟังก์ชันรับจาก ChatInput */
   const handleSend = async ({
     text,
     imageFile,
@@ -73,60 +18,50 @@ export default function ChatArea() {
     text?: string;
     imageFile?: File;
   }) => {
-    // case 1: ข้อความล้วน (เหมือนเดิม)
+    // /* case 1: ข้อความล้วน */
     if (text && !imageFile) {
+      console.log("Text only:", text);
       await append({ role: "user", content: text });
       return;
     }
 
-    // case 2: รูปอย่างเดียว หรือ รูป+ข้อความ
+    // /* case 2: รูปอย่างเดียว หรือ รูป+ข้อความ */
     if (imageFile) {
       const reader = new FileReader();
       reader.onload = async (e) => {
-        const dataUrl = e.target?.result as string;
+        const base64 = e.target?.result as string;
+        // --- DEBUG ---
+        console.log(
+          "ChatArea: Base64 string generated:",
+          base64.substring(0, 100) + "..."
+        ); // แสดงแค่ส่วนหัวพอ
+        // -------------
 
-        // --- จุดแก้ไขสำคัญ: เปลี่ยนมาใช้ Regex ---
-        if (!dataUrl) {
-          console.error("FileReader result is empty.");
-          return; // หยุดทำงานถ้าไม่มีข้อมูล
-        }
-
-        // Regex สำหรับแยก Data URL
-        const match = dataUrl.match(/^data:(.+);base64,(.+)$/);
-
-        if (!match) {
-          console.error("Invalid Data URL format. Could not parse.");
-          return; // หยุดทำงานถ้าไม่ใช่รูปแบบที่ถูกต้อง
-        }
-
-        const mimeType = match[1]; // ส่วนที่ 1 คือ mimeType (เช่น "image/png")
-        const base64Data = match[2]; // ส่วนที่ 2 คือข้อมูล base64 ดิบ
-        // ------------------------------------------
-
-        const content: Array<{
-          type: string;
-          text?: string;
-          image?: string;
-          mimeType?: string;
-        }> = [];
-
+        // /* case 2.1: รูป + ข้อความ */
         if (text) {
-          content.push({ type: "text", text });
+          console.log("Text:", text);
+          console.log("Image file:", imageFile);
+          console.log("Base64 string:", base64);
+          // ส่งข้อความและรูปภาพ
+          await append({
+            role: "user",
+            content: [
+              { type: "text", text },
+              { type: "image", image: base64, mimeType: imageFile.type },
+            ] as any,
+          });
+        } else {
+          // /* case 2.2: รูปอย่างเดียว */
+          console.log("Image file (Only):", imageFile);
+          console.log("Base64 string:", base64);
+          await append({
+            role: "user",
+            content: [
+              { type: "image", image: base64, mimeType: imageFile.type },
+            ] as any,
+          });
         }
-
-        content.push({ type: "image", image: base64Data, mimeType: mimeType });
-
-        await append({
-          role: "user",
-          content: content as any,
-        });
       };
-
-      // เพิ่มการจัดการ Error ของ FileReader
-      reader.onerror = (error) => {
-        console.error("Error reading file:", error);
-      };
-
       reader.readAsDataURL(imageFile);
     }
   };
