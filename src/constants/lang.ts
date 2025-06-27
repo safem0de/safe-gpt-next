@@ -10,6 +10,7 @@ export const TH = {
     logout : "ลงชื่อออก",
     submit : "ส่ง",
     delete : "ลบ",
+    chathistory : "ประวัติแชท",
 }
 
 export const EN = {
@@ -24,4 +25,5 @@ export const EN = {
     logout : "Logout",
     submit : "Submit",
     delete : "Delete",
+    chathistory : "Chat History",
 }

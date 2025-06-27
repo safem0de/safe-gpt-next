@@ -43,7 +43,7 @@ export default function Sidebar() {
           {open && t.createnewchat}
         </button>
         <hr className="my-3" />
-        <div className="text-xs text-gray-500 mb-2">{open && "ประวัติแชท"}</div>
+        <div className="text-xs text-gray-500 mb-2">{open && t.chathistory}</div>
         <ul className="space-y-2">
           <li className="truncate cursor-pointer p-2 rounded hover:bg-blue-100">
             {open && "สร้างเว็บด้วย Keycloak"}

@@ -6,6 +6,7 @@ import { TH, EN } from "@/constants/lang";
 import { buildUserMessage } from "../utils/messageBuilder";
 import { sendChat } from "../services/chatService";
 import type { ChatMessage } from "../types/chat";
+import { ChatMessageRenderer } from "./ChatMessageRenderer";
 
 export default function ChatArea() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -50,7 +51,7 @@ export default function ChatArea() {
                   : "bg-slate-100 text-black w-full max-w-2xl text-left"
               }`}
             >
-              {Array.isArray(msg.content) ? (
+              {/* {Array.isArray(msg.content) ? (
                 msg.content.map((c, i) =>
                   c.type === "text" ? (
                     <div key={i}>{c.text}</div>
@@ -65,7 +66,8 @@ export default function ChatArea() {
                 )
               ) : (
                 <div>{msg.content}</div> // fallback เผื่อเป็น string
-              )}
+              )} */}
+              <ChatMessageRenderer content={msg.content} />
             </div>
           </div>
         ))}
