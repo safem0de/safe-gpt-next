@@ -1,8 +1,8 @@
 import React from "react";
 import { connectMongoDB } from "@/config/database";
-import ChatArea from "@/components/ChartArea2";
+import ChatArea from "@/components/ChartArea";
 
-connectMongoDB();
+// connectMongoDB();
 export default function page() {
   return (
     <>

@@ -30,7 +30,7 @@ export default function Sidebar() {
           className="w-full px-2 py-2 rounded hover:bg-gray-100 text-left text-gray-800 flex items-center gap-2 cursor-pointer"
           onClick={() => setOpen((v) => !v)}
         >
-          <FontAwesomeIcon icon={open ? faBackward : faBars} />
+          <FontAwesomeIcon icon={open ? faBackward : faBars} className="w-6"/>
           {open && t.hiddensidebar}
         </button>
       </div>
@@ -39,7 +39,7 @@ export default function Sidebar() {
           className="w-full px-2 py-2 rounded hover:bg-gray-100 text-left text-gray-800 flex items-center gap-2 cursor-pointer"
           onClick={() => alert(t.createnewchat)}
         >
-          <FontAwesomeIcon icon={faComments} />
+          <FontAwesomeIcon icon={faComments} className="w-6"/>
           {open && t.createnewchat}
         </button>
         <hr className="my-3" />
