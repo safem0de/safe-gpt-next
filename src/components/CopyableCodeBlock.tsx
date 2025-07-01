@@ -19,19 +19,18 @@ const CopyableCodeBlock: React.FC<CopyableCodeBlockProps> = ({ code, language })
   };
 
   return (
-    <div className="relative group bg-zinc-900 rounded-md my-4">
+    <pre className="relative overflow-x-auto p-4 rounded-md text-sm bg-zinc-900 text-zinc-100 my-4">
       <button
         onClick={handleCopy}
-        className="absolute top-2 right-2 px-2 py-1 text-xs rounded bg-zinc-700 text-white opacity-80 group-hover:opacity-100 transition"
+        className="absolute top-2 right-2 px-2 py-1 text-xs rounded bg-zinc-700 text-white opacity-80 hover:opacity-100 transition"
         aria-label="Copy code"
         type="button"
+        style={{ zIndex: 1 }}
       >
         {copied ? "Copied!" : "Copy"}
       </button>
-      <pre className="overflow-x-auto p-4 rounded-md text-sm bg-zinc-900 text-zinc-100">
-        <code className={`language-${language ?? ""}`}>{code}</code>
-      </pre>
-    </div>
+      <code className={`language-${language ?? ""}`}>{code}</code>
+    </pre>
   );
 };
 

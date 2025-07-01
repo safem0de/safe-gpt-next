@@ -24,22 +24,35 @@ export function ChatMessageRenderer({
               strong: ({ children }) => (
                 <strong className="font-bold">{children}</strong>
               ),
-              code({ children, className, ...props }) {
-                // ถ้ามี className และเป็น block code
-                const isBlock = className && className.startsWith("language-");
-                if (!isBlock) {
-                  // inline code
+
+              code(
+                {
+                  inline,
+                  className,
+                  children,
+                  ...props
+                }: React.HTMLAttributes<HTMLElement> & { inline?: boolean }) {
+                const codeStr = String(children).trim();
+                // เช็คว่าเป็น code block และเนื้อหาสั้นมาก (≤12 ตัวอักษร) และไม่มีขึ้นบรรทัดใหม่
+                if (!inline && codeStr.length < 13 && !codeStr.includes("\n")) {
+                  return (
+                    <code className="bg-zinc-200 rounded px-1 py-0.5 text-sm">
+                      {codeStr}
+                    </code>
+                  );
+                }
+                if (inline) {
                   return (
                     <code className="bg-zinc-200 rounded px-1 py-0.5 text-sm">
                       {children}
                     </code>
                   );
                 }
-                // code block
+                // code block ปกติ
                 const language = className?.replace("language-", "") || "";
                 return (
                   <CopyableCodeBlock
-                    code={String(children).replace(/\n$/, "")}
+                    code={codeStr}
                     language={language}
                   />
                 );
