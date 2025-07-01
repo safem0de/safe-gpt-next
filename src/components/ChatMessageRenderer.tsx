@@ -33,22 +33,21 @@ export function ChatMessageRenderer({
                   ...props
                 }: React.HTMLAttributes<HTMLElement> & { inline?: boolean }) {
                 const codeStr = String(children).trim();
-                // เช็คว่าเป็น code block และเนื้อหาสั้นมาก (≤12 ตัวอักษร) และไม่มีขึ้นบรรทัดใหม่
-                if (!inline && codeStr.length < 13 && !codeStr.includes("\n")) {
+
+                // Case: code block ที่เป็น statement เดี่ยวๆ ไม่มีขึ้นบรรทัดใหม่ → ให้แสดงเป็น inline
+                const shouldBeInline =
+                  !inline &&
+                  !codeStr.includes('\n') &&
+                  codeStr.length < 20 &&
+                  /^[a-zA-Z0-9_ ./-]+$/.test(codeStr);
+
+                if (shouldBeInline || inline) {
                   return (
                     <code className="bg-zinc-200 rounded px-1 py-0.5 text-sm">
                       {codeStr}
                     </code>
                   );
                 }
-                if (inline) {
-                  return (
-                    <code className="bg-zinc-200 rounded px-1 py-0.5 text-sm">
-                      {children}
-                    </code>
-                  );
-                }
-                // code block ปกติ
                 const language = className?.replace("language-", "") || "";
                 return (
                   <CopyableCodeBlock
