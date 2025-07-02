@@ -29,7 +29,7 @@ const CopyableCodeBlock: React.FC<CopyableCodeBlockProps> = ({ code, language })
       >
         {copied ? "Copied!" : "Copy"}
       </button>
-      <pre className="overflow-x-auto p-4 pr-12 rounded-md text-sm bg-zinc-900 text-zinc-100">
+      <pre className="overflow-x-auto p-4 rounded-md text-sm bg-zinc-900 text-zinc-100">
         <code className={`language-${language ?? ""}`}>{code}</code>
       </pre>
     </div>

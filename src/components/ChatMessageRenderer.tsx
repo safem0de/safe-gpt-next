@@ -17,7 +17,7 @@ export function ChatMessageRenderer({
           <ReactMarkdown
             key={i}
             components={{
-              p: ({ children }) => <p className="mb-2">{children}</p>,
+              // p: ({ children }) => <p className="mb-2">{children}</p>,
               ul: ({ children }) => (
                 <ul className="list-disc ml-6">{children}</ul>
               ),
@@ -34,26 +34,35 @@ export function ChatMessageRenderer({
                 }: React.HTMLAttributes<HTMLElement> & { inline?: boolean }) {
                 const codeStr = String(children).trim();
 
-                // Case: code block ที่เป็น statement เดี่ยวๆ ไม่มีขึ้นบรรทัดใหม่ → ให้แสดงเป็น inline
                 const shouldBeInline =
-                  !inline &&
-                  !codeStr.includes('\n') &&
-                  codeStr.length < 20 &&
-                  /^[a-zA-Z0-9_ ./-]+$/.test(codeStr);
+                  inline ||
+                  (
+                    !inline &&
+                    !codeStr.includes('\n') &&
+                    (
+                      // html tag/single tag
+                      /^<!DOCTYPE html>$/i.test(codeStr) ||
+                      /^<([a-zA-Z][\w-]*)(\s+[^<>]*)?\/?>$/.test(codeStr) ||
+                      /^<([a-zA-Z][\w-]*)(\s+[^<>]*)?>.*<\/\1>$/.test(codeStr) ||
+                      // identifier, path, assignment, class, function, statement
+                      /^[a-zA-Z0-9_.$:[\](){}"'=, \-\+\/\\<>;|*&!?%^`~]+$/.test(codeStr)
+                    )
+                  );
 
-                if (shouldBeInline || inline) {
+
+                if (shouldBeInline) {
                   return (
                     <code className="bg-zinc-200 rounded px-1 py-0.5 text-sm">
                       {codeStr}
                     </code>
                   );
                 }
+
                 const language = className?.replace("language-", "") || "";
                 return (
-                  <CopyableCodeBlock
-                    code={codeStr}
-                    language={language}
-                  />
+                  <pre className="overflow-x-auto p-4 pr-16 rounded-md text-sm bg-zinc-900 text-zinc-100 my-4 relative">
+                    <CopyableCodeBlock code={codeStr} language={language} />
+                  </pre>
                 );
               },
             }}
