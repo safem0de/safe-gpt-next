@@ -17,7 +17,7 @@ export function ChatMessageRenderer({
           <ReactMarkdown
             key={i}
             components={{
-              // p: ({ children }) => <p className="mb-2">{children}</p>,
+              // p: ({ children }) => <p className="mb-2">{children}</p>, // ใช้แล้ว Error
               ul: ({ children }) => (
                 <ul className="list-disc ml-6">{children}</ul>
               ),
@@ -60,7 +60,7 @@ export function ChatMessageRenderer({
 
                 const language = className?.replace("language-", "") || "";
                 return (
-                  <pre className="overflow-x-auto p-4 pr-16 rounded-md text-sm bg-zinc-900 text-zinc-100 my-4 relative">
+                  <pre className="overflow-x-auto p-4 rounded-md text-sm bg-zinc-900 text-zinc-100 my-4 relative">
                     <CopyableCodeBlock code={codeStr} language={language} />
                   </pre>
                 );
