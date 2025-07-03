@@ -18,6 +18,9 @@ D:\Nextjs>npx create-next-app@latest
 npm i mongoose
 mongodb://root:examplepassword@localhost:32017
 ```
+test connection
+1. download mongosh
+2. paste your connection string
 ---
 ### mongodb create new database with collection name
 สร้าง Database และ Collection
