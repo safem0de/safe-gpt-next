@@ -14,8 +14,10 @@ D:\Nextjs>npx create-next-app@latest
 ---
 ## Example
 ### NO SQL database (connection)
+```bash
 npm i mongoose
 mongodb://root:examplepassword@localhost:32017
+```
 ---
 ### mongodb create new database with collection name
 สร้าง Database และ Collection
