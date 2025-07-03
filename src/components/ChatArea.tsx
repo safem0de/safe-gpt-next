@@ -1,3 +1,5 @@
+// components/ChatArea.tsx
+
 "use client";
 import { useRef, useEffect, useState } from "react";
 import ChatInput from "./ChatInput";
