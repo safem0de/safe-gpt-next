@@ -9,9 +9,10 @@ import { buildUserMessage } from "../utils/messageBuilder";
 import type { ChatMessage } from "../types/chat";
 import { ChatMessageRenderer } from "./ChatMessageRenderer";
 import { sendChat } from "../services/chatService";
-import { saveChatHistory } from '@/services/chatService';
+import { addOrUpdateChat } from '@/services/chatService';
 
 export default function ChatArea() {
+  const [chatId, setChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const { lang } = useLang();
@@ -21,7 +22,7 @@ export default function ChatArea() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = async ({text, imageFile,}: {text?: string;imageFile?: File;}) => {
+  const handleSend = async ({ text, imageFile, }: { text?: string; imageFile?: File; }) => {
     if (!text && !imageFile) return;
 
     const userMessage = await buildUserMessage({ text, imageFile });
@@ -30,7 +31,13 @@ export default function ChatArea() {
     const assistantMessage = await sendChat([...messages, userMessage]);
     setMessages((prev) => [...prev, assistantMessage]);
 
-    await saveChatHistory('user-123', [...messages, userMessage, assistantMessage]);
+    // await saveChatHistory('user-123', [...messages, userMessage, assistantMessage]);
+    const res = await addOrUpdateChat('user-123', [...messages, userMessage, assistantMessage], chatId);
+
+    // ถ้าเพิ่งสร้างใหม่จะได้ _id กลับมา เอามาเก็บใน state เพื่อใช้ update รอบถัดไป
+    if (res.success && res.chat && res.chat._id) {
+      setChatId(res.chat._id);
+    }
   };
 
   return (
@@ -39,16 +46,14 @@ export default function ChatArea() {
         {messages.map((msg, idx) => (
           <div
             key={idx}
-            className={`flex mb-3 ${
-              msg.role === "user" ? "justify-end" : "justify-start"
-            }`}
+            className={`flex mb-3 ${msg.role === "user" ? "justify-end" : "justify-start"
+              }`}
           >
             <div
-              className={`rounded px-4 py-2 ${
-                msg.role === "user"
+              className={`rounded px-4 py-2 ${msg.role === "user"
                   ? "bg-slate-900 text-white max-w-lg ml-auto text-right"
                   : "bg-slate-100 text-black w-full max-w-2xl text-left"
-              }`}
+                }`}
             >
               <ChatMessageRenderer content={msg.content} />
             </div>
