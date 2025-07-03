@@ -12,9 +12,10 @@ D:\Nextjs>npx create-next-app@latest
 √ What import alias would you like configured? ... @/*
 ```
 ---
+## Example
 ### NO SQL database (connection)
 npm i mongoose
-mongodb://root:example@localhost:32017
+mongodb://root:examplepassword@localhost:32017
 ---
 ### mongodb create new database with collection name
 สร้าง Database และ Collection
@@ -36,9 +37,17 @@ db.createUser({
   roles: [{ role: "readWrite", db: "yourdatabasename" }]
 })
 ```
+หรือ ให้สิทธิ์ทุก database
+```bash
+db.createUser({
+  user: "myuser",
+  pwd: "mypassword",
+  roles: [{ role: "readWriteAnyDatabase", db: "admin" }]
+})
+```
 ---
-### mongodb update user (need to update using admin)
+### mongodb update(pwd) user (need to update using admin)
 ```bash
 use safem0de-gpt
-db.updateUser("user-123", { pwd: "12345679" })
+db.updateUser("user-123", { pwd: "newpassword" })
 ```
