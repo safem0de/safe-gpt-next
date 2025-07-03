@@ -68,3 +68,22 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: false, error: err.message }, { status: 500 });
     }
 }
+
+export async function GET(req: NextRequest) {
+    try {
+        await connectDB();
+        const { searchParams } = new URL(req.url);
+        const userId = searchParams.get('userId');
+        let chats;
+
+        if (userId) {
+            chats = await Chat.find({ userId }).sort({ updatedAt: -1 }); // หรือสร้าง index
+        } else {
+            chats = await Chat.find().sort({ updatedAt: -1 });
+        }
+
+        return NextResponse.json({ success: true, chats });
+    } catch (err: any) {
+        return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    }
+}

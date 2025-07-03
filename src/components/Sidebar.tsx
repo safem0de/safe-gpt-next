@@ -1,3 +1,5 @@
+// components/Sidebar.tsx
+
 "use client";
 import { TH, EN } from "@/constants/lang";
 import { useLang } from "@/contexts/LangContext";
@@ -8,9 +10,11 @@ import {
   faComments,
   faBackward,
 } from "@fortawesome/free-solid-svg-icons";
+import type { ChatHistory } from "@/types/chat";
 
 export default function Sidebar() {
   const [open, setOpen] = useState(true);
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
   const { lang } = useLang();
   const t = lang === "th" ? TH : EN;
 
@@ -20,13 +24,22 @@ export default function Sidebar() {
       if (window.innerWidth < 640) { // ใช้ breakpoint sm (640px)
         setOpen(false);
       } else {
-        setOpen(true);
+        // setOpen(true); // ไม่ต้องทำอะไรเลย
       }
     }
     handleResize(); // เรียกครั้งแรกตอน mount
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    async function fetchHistory() {
+      const res = await fetch("/api/chats?userId=user-123");
+      const data = await res.json();
+      if (data.success) setChatHistory(data.chats);
+    }
+    fetchHistory();
   }, []);
 
   return (
@@ -60,12 +73,21 @@ export default function Sidebar() {
         <hr className="my-3" />
         <div className="text-xs text-gray-500 mb-2">{open && t.chathistory}</div>
         <ul className="space-y-2">
-          <li className="truncate cursor-pointer p-2 rounded hover:bg-blue-100">
+          {/* <li className="truncate cursor-pointer p-2 rounded hover:bg-blue-100">
             {open && "สร้างเว็บด้วย Keycloak"}
           </li>
           <li className="truncate cursor-pointer p-2 rounded hover:bg-blue-100">
             {open && "เริ่มใช้ Keycloak"}
-          </li>
+          </li> */}
+          {chatHistory.map((chat) => (
+            <li
+              key={chat._id}
+              className="truncate cursor-pointer p-2 rounded hover:bg-blue-100 text-black"
+              title={chat.title}
+            >
+              {open && chat.title}
+            </li>
+          ))}
         </ul>
       </div>
     </aside>
