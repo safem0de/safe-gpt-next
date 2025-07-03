@@ -1,28 +1,28 @@
-import mongoose from "mongoose";
+// models/chat-model.ts
+import mongoose, { Schema, Document } from 'mongoose';
 
-const chatSchema = new mongoose.Schema(
-    {
-        user:{
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"users",
-            require: true,
-        },
-        title:{
-            type: String,
-            require: true,
-        },
-        messages:{
-            type : Array,
-            default: [],
-        },
-    },
-    { timestamps: true }
-);
-
-if(mongoose.models && mongoose.models.chats)
-{
-    delete mongoose.models.chats;
+export interface IMessage {
+  role: string;
+  content: string;
+  timestamp: Date;
 }
 
-const ChatModel = mongoose.model("chats", chatSchema);
-export default ChatModel;
+export interface IChat extends Document {
+  userId: string;
+  messages: IMessage[];
+  createdAt: Date;
+}
+
+const MessageSchema = new Schema<IMessage>({
+  role: { type: String, required: true },
+  content: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now }
+});
+
+const ChatSchema = new Schema<IChat>({
+  userId: { type: String, required: true },
+  messages: [MessageSchema],
+  createdAt: { type: Date, default: Date.now }
+});
+
+export const ChatModel = mongoose.models.Chat || mongoose.model<IChat>('Chat', ChatSchema);

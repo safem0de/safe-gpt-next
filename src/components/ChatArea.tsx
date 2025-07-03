@@ -4,9 +4,10 @@ import ChatInput from "./ChatInput";
 import { useLang } from "@/contexts/LangContext";
 import { TH, EN } from "@/constants/lang";
 import { buildUserMessage } from "../utils/messageBuilder";
-import { sendChat } from "../services/chatService";
 import type { ChatMessage } from "../types/chat";
 import { ChatMessageRenderer } from "./ChatMessageRenderer";
+import { sendChat } from "../services/chatService";
+import { saveChatHistory } from '@/services/chatService';
 
 export default function ChatArea() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -18,13 +19,7 @@ export default function ChatArea() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = async ({
-    text,
-    imageFile,
-  }: {
-    text?: string;
-    imageFile?: File;
-  }) => {
+  const handleSend = async ({text, imageFile,}: {text?: string;imageFile?: File;}) => {
     if (!text && !imageFile) return;
 
     const userMessage = await buildUserMessage({ text, imageFile });
@@ -32,6 +27,8 @@ export default function ChatArea() {
 
     const assistantMessage = await sendChat([...messages, userMessage]);
     setMessages((prev) => [...prev, assistantMessage]);
+
+    await saveChatHistory('user-123', [...messages, userMessage, assistantMessage]);
   };
 
   return (
@@ -51,22 +48,6 @@ export default function ChatArea() {
                   : "bg-slate-100 text-black w-full max-w-2xl text-left"
               }`}
             >
-              {/* {Array.isArray(msg.content) ? (
-                msg.content.map((c, i) =>
-                  c.type === "text" ? (
-                    <div key={i}>{c.text}</div>
-                  ) : (
-                    <img
-                      key={i}
-                      src={c.image}
-                      alt="uploaded"
-                      className="max-w-xs max-h-60 my-2"
-                    />
-                  )
-                )
-              ) : (
-                <div>{msg.content}</div> // fallback เผื่อเป็น string
-              )} */}
               <ChatMessageRenderer content={msg.content} />
             </div>
           </div>

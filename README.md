@@ -11,12 +11,34 @@ D:\Nextjs>npx create-next-app@latest
 √ Would you like to customize the import alias (`@/*` by default)? ... Yes
 √ What import alias would you like configured? ... @/*
 ```
-
-### สร้าง Navbar
-components/Navbar.tsx
-
+---
 ### NO SQL database (connection)
 npm i mongoose
 mongodb://root:example@localhost:32017
-
-https://ai-sdk.dev/docs/reference/ai-sdk-ui/convert-to-core-messages
+---
+### mongodb create new database with collection name
+สร้าง Database และ Collection
+```bash
+use mydb
+db.createCollection("tests")
+```
+เพิ่ม Document (ทดลอง insert ข้อมูลแรก)
+```bash
+db.tests.insertOne({ userId: "user001", messages: [] })
+```
+---
+### mongodb create new user
+```bash
+use admin
+db.createUser({
+  user: "myuser",
+  pwd: "mypassword",
+  roles: [{ role: "readWrite", db: "yourdatabasename" }]
+})
+```
+---
+### mongodb update user (need to update using admin)
+```bash
+use safem0de-gpt
+db.updateUser("user-123", { pwd: "12345679" })
+```
