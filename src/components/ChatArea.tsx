@@ -51,19 +51,22 @@ export default function ChatArea() {
     const userMessage = await buildUserMessage({ text, imageFile });
     const newMessages = [...messages, userMessage];
 
-    // ส่งหา assistant
+    // 1. **อัปเดตเฉพาะ user message ให้แสดงทันที**
+    setActiveChat(chatId || "", newMessages);
+
+    // 2. เรียก API หา assistant (อาจโชว์ loading, หรือ dummy ai typing)
     const assistantMessage = await sendChat(newMessages);
+
+    // 3. พอได้คำตอบ ค่อยอัปเดตแชทใน store (แสดง ai message)
     const allMessages = [...newMessages, assistantMessage];
+    setActiveChat(chatId || "", allMessages);
 
-    // อัปเดต messages ใน store
-    setActiveChat(chatId || "", allMessages); // chatId อาจเป็น null ตอนแรก (สร้างใหม่)
-
-    // sync ไป backend (สร้างหรือ update)
+    // 4. sync backend
     const res = await addOrUpdateChat('user-123', allMessages, chatId);
 
-    // ถ้าเพิ่งสร้างใหม่จะได้ _id กลับมา
+    // 5. กรณี chat ใหม่ เอา chatId ใหม่มา set ใน store
     if (res.success && res.chat && res.chat._id && !chatId) {
-      setActiveChat(res.chat._id, allMessages); // เซต chatId ใหม่ใน store
+      setActiveChat(res.chat._id, allMessages);
     }
   };
 
