@@ -1,14 +1,24 @@
-import { NextRequest, NextResponse } from "next/server";
-import mongoose from "mongoose";
-import { Chat } from "@/models/Chat";
+// api/chats/[id]/route.ts
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+import { NextRequest, NextResponse } from "next/server";
+import { Chat } from "@/models/Chat";
+import { connectDB } from "@/utils/db";
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+    const { id } = await params;
+
     try {
-        await mongoose.connect(process.env.MONGODB_URI as string);
-        const chat = await Chat.findById(params.id);
+        await connectDB();
+
+        const chat = await Chat.findById(id);
+
         if (!chat) {
             return NextResponse.json({ success: false, error: "Not found" }, { status: 404 });
         }
+
         return NextResponse.json({ success: true, chat });
     } catch (err: any) {
         return NextResponse.json({ success: false, error: err.message }, { status: 500 });

@@ -1,26 +1,9 @@
 // app/api/chats/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import mongoose from "mongoose";
 import { Chat } from "@/models/Chat";
+import { connectDB } from "@/utils/db";
 
-const uri = process.env.MONGODB_URI as string;
-const coll = process.env.MONGODB_COLL as string;
-
-async function connectDB() {
-    if (mongoose.connection.readyState === 1) return; // already connected
-    if (mongoose.connection.readyState === 2) return; // connecting
-    await mongoose.connect(uri);
-
-    // ได้ connection/db หลังเชื่อมต่อสำเร็จเท่านั้น
-    const db = mongoose.connection.db;
-    if (!db) return; // ป้องกัน undefined
-
-    const collections = await db.listCollections({ name: coll }).toArray();
-    if (collections.length === 0) {
-        await db.createCollection(coll);
-    }
-}
 
 export async function POST(req: NextRequest) {
     try {
