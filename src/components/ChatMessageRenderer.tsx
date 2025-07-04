@@ -1,5 +1,8 @@
+// components/ChatMessageRenderer.tsx
+
 import React from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import type { ChatMessage } from "../types/chat";
 import CopyableCodeBlock from "./CopyableCodeBlock";
 
@@ -16,6 +19,7 @@ export function ChatMessageRenderer({
         c.type === "text" ? (
           <ReactMarkdown
             key={i}
+            remarkPlugins={[remarkGfm]}
             components={{
               // p: ({ children }) => <p className="mb-2">{children}</p>, // ใช้แล้ว Error
               ul: ({ children }) => (
@@ -23,6 +27,20 @@ export function ChatMessageRenderer({
               ),
               strong: ({ children }) => (
                 <strong className="font-bold">{children}</strong>
+              ),
+              table: ({ children }) => (
+                <table className="min-w-full border text-sm my-2">{children}</table>
+              ),
+              thead: ({ children }) => (
+                <thead className="bg-slate-100 border-b">{children}</thead>
+              ),
+              tbody: ({ children }) => <tbody>{children}</tbody>,
+              tr: ({ children }) => <tr className="border-b">{children}</tr>,
+              th: ({ children }) => (
+                <th className="px-3 py-1 font-bold text-left border-r last:border-r-0">{children}</th>
+              ),
+              td: ({ children }) => (
+                <td className="px-3 py-1 border-r last:border-r-0">{children}</td>
               ),
 
               code(

@@ -137,7 +137,7 @@ export default function Sidebar() {
             </li>
           ))} */}
 
-          {chatHistory.map((chat) => (
+          {open && chatHistory.map((chat) => (
             <li
               key={chat._id}
               className="truncate cursor-pointer p-2 rounded hover:bg-blue-100 text-black flex items-center justify-between"
