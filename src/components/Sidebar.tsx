@@ -11,12 +11,23 @@ import {
   faBackward,
 } from "@fortawesome/free-solid-svg-icons";
 import type { ChatHistory } from "@/types/chat";
+import { useChatStore } from "@/store/chat-store";
 
 export default function Sidebar() {
   const [open, setOpen] = useState(true);
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
+  const setActiveChat = useChatStore((state) => state.setActiveChat);
   const { lang } = useLang();
   const t = lang === "th" ? TH : EN;
+
+  async function handleSelectChat(chatId: string) {
+    // ดึง messages จาก backend ด้วย chatId
+    const res = await fetch(`/api/chats/${chatId}`);
+    const data = await res.json();
+    if (data.success && data.chat) {
+      setActiveChat(chatId, data.chat.messages);
+    }
+  }
 
   // เพิ่ม auto collapse เมื่อจอเล็ก
   useEffect(() => {
@@ -73,17 +84,13 @@ export default function Sidebar() {
         <hr className="my-3" />
         <div className="text-xs text-gray-500 mb-2">{open && t.chathistory}</div>
         <ul className="space-y-2">
-          {/* <li className="truncate cursor-pointer p-2 rounded hover:bg-blue-100">
-            {open && "สร้างเว็บด้วย Keycloak"}
-          </li>
-          <li className="truncate cursor-pointer p-2 rounded hover:bg-blue-100">
-            {open && "เริ่มใช้ Keycloak"}
-          </li> */}
+
           {chatHistory.map((chat) => (
             <li
               key={chat._id}
               className="truncate cursor-pointer p-2 rounded hover:bg-blue-100 text-black"
               title={chat.title}
+              onClick={() => handleSelectChat(chat._id)}
             >
               {open && chat.title}
             </li>

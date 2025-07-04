@@ -20,7 +20,6 @@ async function connectDB() {
     if (collections.length === 0) {
         await db.createCollection(coll);
     }
-    console.log("mongodb connected");
 }
 
 export async function POST(req: NextRequest) {
