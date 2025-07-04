@@ -59,9 +59,8 @@ export default function AvatarDropdown({
                 key={item.label}
                 onClick={item.onClick}
                 disabled={item.disabled}
-                className={`flex w-full items-center gap-2 px-4 py-2 text-left hover:bg-gray-100 text-gray-800 ${
-                  item.disabled ? "opacity-60 cursor-not-allowed" : ""
-                }`}
+                className={`flex w-full items-center gap-2 px-4 py-2 text-left hover:bg-gray-100 text-gray-800 ${item.disabled ? "opacity-60 cursor-not-allowed" : ""
+                  }`}
               >
                 {item.icon}
                 <span>{item.label}</span>

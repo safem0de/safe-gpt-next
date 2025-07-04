@@ -4,6 +4,7 @@ import { SITE } from "@/constants/site";
 import AvatarDropdown from "@/components/AvatarDropdown";
 import { TH, EN } from "@/constants/lang";
 import { useLang } from "@/contexts/LangContext";
+import { signOut } from "next-auth/react";
 
 export default function Navbar() {
   const { lang, setLang } = useLang();
@@ -14,6 +15,8 @@ export default function Navbar() {
     console.log("เปลี่ยนเป็นภาษา:", newLang); // log ค่าที่เลือก
     setLang(newLang);
   };
+
+  // console.log("env :" ,process.env.NEXT_PUBLIC_KEYCLOAK_LOGOUT_URL)
 
   return (
     <nav
@@ -47,7 +50,7 @@ export default function Navbar() {
         <AvatarDropdown
           email="n.wangwanich@gmail.com"
           avatarUrl="https://api.dicebear.com/7.x/identicon/svg?seed=plus"
-          onLogout={() => alert(t.logout)}
+          onLogout={() => signOut({ callbackUrl: process.env.NEXT_PUBLIC_KEYCLOAK_LOGOUT_URL })}
         />
       </div>
     </nav>
