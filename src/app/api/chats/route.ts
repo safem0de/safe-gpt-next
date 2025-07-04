@@ -1,24 +1,11 @@
 // app/api/chats/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import mongoose from 'mongoose';
+
+import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
+import { Chat } from "@/models/Chat";
 
 const uri = process.env.MONGODB_URI as string;
 const coll = process.env.MONGODB_COLL as string;
-
-const MessageSchema = new mongoose.Schema({
-    role: String,
-    content: Array,
-});
-
-const ChatSchema = new mongoose.Schema({
-    userId: String,
-    title: String,
-    messages: [MessageSchema],
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now },
-});
-
-const Chat = mongoose.models.Chat || mongoose.model('Chat', ChatSchema);
 
 async function connectDB() {
     if (mongoose.connection.readyState === 1) return; // already connected
@@ -33,18 +20,13 @@ async function connectDB() {
     if (collections.length === 0) {
         await db.createCollection(coll);
     }
+    console.log("mongodb connected");
 }
 
 export async function POST(req: NextRequest) {
     try {
         await connectDB();
         const { _id, userId, title, messages } = await req.json();
-
-        // let title = "";
-        // if (messages && messages.length > 0 && messages[0].content?.[0]?.text) {
-        //     title = messages[0].content[0].text;
-        // }
-        // const chat = await Chat.create({ userId, title, messages });
 
         // todo : ให้ฝั่ง backend support PATCH หรือแยก insert/update เป็นคนละ endpoint
         let chat;
@@ -87,13 +69,15 @@ export async function GET(req: NextRequest) {
         let chats;
 
         if (userId) {
-            chats = await Chat.find({ userId }).sort({ updatedAt: -1 }); // หรือสร้าง index
+            chats = await Chat.find({ userId }).sort({ updatedAt: -1 });
+            console.log("DEBUG chats for userId", userId, ":", chats);
         } else {
             chats = await Chat.find().sort({ updatedAt: -1 });
         }
 
         return NextResponse.json({ success: true, chats });
     } catch (err: any) {
+        console.error("GET /api/chats error:", err);
         return NextResponse.json({ success: false, error: err.message }, { status: 500 });
     }
 }
