@@ -23,6 +23,7 @@ export default function ChatArea() {
   const chatId = useChatStore((s) => s.chatId);
   const messages = useChatStore((s) => s.messages);
   const setActiveChat = useChatStore((s) => s.setActiveChat);
+  const fetchChatHistory = useChatStore((s) => s.fetchChatHistory);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -67,6 +68,8 @@ export default function ChatArea() {
     // 5. กรณี chat ใหม่ เอา chatId ใหม่มา set ใน store
     if (res.success && res.chat && res.chat._id && !chatId) {
       setActiveChat(res.chat._id, allMessages);
+      // ดึง history ใหม่ทันทีที่สร้างแชทแรก
+      await fetchChatHistory('user-123');
     }
   };
 
