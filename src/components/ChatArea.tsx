@@ -1,7 +1,7 @@
 // components/ChatArea.tsx
 
 "use client";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import ChatInput from "./ChatInput";
 import { useLang } from "@/contexts/LangContext";
 import { TH, EN } from "@/constants/lang";

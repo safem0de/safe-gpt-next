@@ -1,7 +1,7 @@
 // app/api/chats/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { Chat } from "@/models/Chat";
+import { Chat } from "@/models/chat-model";
 import { connectDB } from "@/utils/db";
 
 
