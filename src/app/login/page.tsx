@@ -4,16 +4,16 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function LoginPage() {
-  const { status } = useSession();
-  const router = useRouter();
+  // const { status } = useSession();
+  // const router = useRouter();
 
-  useEffect(() => {
-    if (status === "authenticated") {
-      router.push("/");
-    }
-  }, [status, router]);
+  // useEffect(() => {
+  //   if (status === "authenticated") {
+  //     router.push("/");
+  //   }
+  // }, [status, router]);
 
-  if (status === "loading") return <div>Loading...</div>;
+  // if (status === "loading") return <div>Loading...</div>;
 
   return (
     <div style={{

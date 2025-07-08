@@ -65,3 +65,8 @@ KEYCLOAK_ISSUER=http://localhost:32080/realms/<your-realm>
 ```bash
 NEXT_PUBLIC_KEYCLOAK_LOGOUT_URL=http://<localhost>:<port,8080>/realms/<your-realm>/protocol/openid-connect/logout?redirect_uri=http://localhost:3000
 ```
+
+### SonarQube
+```bash
+npx sonar-scanner
+```

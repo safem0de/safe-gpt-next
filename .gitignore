@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# sonarqube
+sonar-project.properties
+.scannerwork/*
+.vscode/*
