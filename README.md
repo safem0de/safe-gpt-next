@@ -70,3 +70,7 @@ NEXT_PUBLIC_KEYCLOAK_LOGOUT_URL=http://<localhost>:<port,8080>/realms/<your-real
 ```bash
 npx sonar-scanner
 ```
+
+https://nextjs.org/docs/app/guides/testing/jest
+npm install -D jest jest-environment-jsdom @testing-library/react @testing-library/dom @testing-library/jest-dom ts-node @types/jest
+npm init jest@latest
