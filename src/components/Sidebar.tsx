@@ -126,17 +126,6 @@ export default function Sidebar() {
         <div className="text-xs text-gray-500 mb-2">{open && t.chathistory}</div>
         <ul className="space-y-2">
 
-          {/* {chatHistory.map((chat) => (
-            <li
-              key={chat._id}
-              className="truncate cursor-pointer p-2 rounded hover:bg-blue-100 text-black"
-              title={chat.title}
-              onClick={() => handleSelectChat(chat._id)}
-            >
-              {open && chat.title}
-            </li>
-          ))} */}
-
           {open && chatHistory.map((chat) => (
             <li
               key={chat._id}
