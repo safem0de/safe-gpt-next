@@ -3,6 +3,7 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeSanitize from "rehype-sanitize";
 import type { ChatMessage } from "../types/chat";
 import CopyableCodeBlock from "./CopyableCodeBlock";
 
@@ -20,6 +21,7 @@ export function ChatMessageRenderer({
           <ReactMarkdown
             key={i}
             remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeSanitize]}
             components={{
               // p: ({ children }) => <p className="mb-2">{children}</p>, // ใช้แล้ว Error
               ul: ({ children }) => (
