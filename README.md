@@ -71,6 +71,17 @@ NEXT_PUBLIC_KEYCLOAK_LOGOUT_URL=http://<localhost>:<port,8080>/realms/<your-real
 npx sonar-scanner
 ```
 
-https://nextjs.org/docs/app/guides/testing/jest
-npm install -D jest jest-environment-jsdom @testing-library/react @testing-library/dom @testing-library/jest-dom ts-node @types/jest
-npm init jest@latest
+npm install --save-dev @babel/preset-env @babel/preset-react @babel/preset-typescript babel-jest
+babel.config.js
+jest.config.js
+jest.setup.js
+
+tsconfig.json
+```bash
+{
+  "compilerOptions": {
+    // ...
+    "types": ["jest", "@testing-library/jest-dom"] // เพิ่มบรรทัดนี้
+  }
+}
+```
