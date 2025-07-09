@@ -4,16 +4,13 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function LoginPage() {
-  // const { status } = useSession();
-  // const router = useRouter();
+  const handleFocusOrHover = (e: React.FocusEvent<HTMLButtonElement> | React.MouseEvent<HTMLButtonElement>) => {
+    e.currentTarget.style.background = "linear-gradient(90deg,#6366f1 0%,#1e293b 100%)";
+  };
 
-  // useEffect(() => {
-  //   if (status === "authenticated") {
-  //     router.push("/");
-  //   }
-  // }, [status, router]);
-
-  // if (status === "loading") return <div>Loading...</div>;
+  const handleBlurOrOut = (e: React.FocusEvent<HTMLButtonElement> | React.MouseEvent<HTMLButtonElement>) => {
+    e.currentTarget.style.background = "linear-gradient(90deg,#1e293b 60%,#6366f1 100%)";
+  };
 
   return (
     <div style={{
@@ -39,8 +36,10 @@ export default function LoginPage() {
           boxShadow: "0 2px 10px 0 #c7d2fe44",
           transition: "all 0.18s",
         }}
-        onMouseOver={e => (e.currentTarget.style.background = "linear-gradient(90deg,#6366f1 0%,#1e293b 100%)")}
-        onMouseOut={e => (e.currentTarget.style.background = "linear-gradient(90deg,#1e293b 60%,#6366f1 100%)")}
+        onMouseOver={handleFocusOrHover}
+        onFocus={handleFocusOrHover}
+        onMouseOut={handleBlurOrOut}
+        onBlur={handleBlurOrOut}
       >
         🔐 Login with Keycloak
       </button>
