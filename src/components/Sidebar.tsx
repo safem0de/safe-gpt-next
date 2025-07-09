@@ -142,11 +142,16 @@ export default function Sidebar() {
               key={chat._id}
               className="truncate cursor-pointer p-2 rounded hover:bg-blue-100 text-black flex items-center justify-between"
               title={chat.title}
-              onClick={() => handleSelectChat(chat._id)}
             >
-              <span className="flex-1 truncate">{open && chat.title}</span>
+              <button
+                className="flex-1 truncate text-left"
+                onClick={() => handleSelectChat(chat._id)}
+              >
+                {open && chat.title}
+              </button>
               {/* ปุ่มลบ */}
               <button
+                type="button"
                 className="ml-2 p-1 rounded hover:bg-red-100 text-gray-500 hover:text-red-600"
                 title="Delete chat"
                 onClick={e => {
