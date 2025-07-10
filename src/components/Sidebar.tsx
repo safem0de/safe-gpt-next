@@ -126,7 +126,7 @@ export default function Sidebar() {
         <div className="text-xs text-gray-500 mb-2">{open && t.chathistory}</div>
         <ul className="space-y-2">
 
-          {open && chatHistory.map((chat) => (
+          {open && (chatHistory || []).map((chat) => (
             <li
               key={chat._id}
               className="truncate cursor-pointer p-2 rounded hover:bg-blue-100 text-black flex items-center justify-between"

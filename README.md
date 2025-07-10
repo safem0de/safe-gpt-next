@@ -71,6 +71,7 @@ NEXT_PUBLIC_KEYCLOAK_LOGOUT_URL=http://<localhost>:<port,8080>/realms/<your-real
 npx sonar-scanner
 ```
 
+### Test
 npm install --save-dev @babel/preset-env @babel/preset-react @babel/preset-typescript babel-jest
 babel.config.js
 jest.config.js
