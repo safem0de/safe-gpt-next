@@ -14,20 +14,20 @@ const mockChatHistory = [
     { _id: 'chat-2', title: 'แชทที่ 2' },
 ];
 
+const storeState = {
+    chatId: 'chat-1',
+    messages: [],
+    chatHistory: mockChatHistory,
+    setActiveChat: mockSetActiveChat,
+    clearChat: mockClearChat,
+    fetchChatHistory: mockFetchChatHistory,
+};
+
+const useChatStoreMock = (selector: any) => selector(storeState);
+useChatStoreMock.getState = () => storeState;
+
 jest.mock('@/store/chat-store', () => ({
-    useChatStore: (selector: any) => selector({
-        chatId: 'chat-1',
-        messages: [],
-        chatHistory: mockChatHistory,
-        setActiveChat: mockSetActiveChat,
-        clearChat: mockClearChat,
-        fetchChatHistory: mockFetchChatHistory,
-        getState: () => ({
-            chatId: 'chat-1',
-            setActiveChat: mockSetActiveChat,
-            clearChat: mockClearChat,
-        }),
-    }),
+    useChatStore: useChatStoreMock,
 }));
 
 beforeAll(() => {
@@ -54,7 +54,7 @@ describe('Sidebar', () => {
         });
     });
 
-    it('แสดงรายชื่อแชท', () => {
+    it('แสดงรายการแชท', () => {
         render(<Sidebar />);
         expect(screen.getByText('แชทที่ 1')).toBeInTheDocument();
         expect(screen.getByText('แชทที่ 2')).toBeInTheDocument();
@@ -67,4 +67,63 @@ describe('Sidebar', () => {
             expect(mockSetActiveChat).toHaveBeenCalled();
         });
     });
+
+    it('กดปุ่ม "สร้างแชทใหม่" แล้วเรียก setActiveChat และ fetchChatHistory', async () => {
+        render(<Sidebar />);
+        fireEvent.click(screen.getByText('สร้างแชทใหม่'));
+        await waitFor(() => {
+            expect(mockSetActiveChat).toHaveBeenCalled();
+            expect(mockFetchChatHistory).toHaveBeenCalledWith('user-123');
+        });
+    });
+
+    it('กดปุ่ม "ลบแชท" แล้วเรียก fetchChatHistory และ setActiveChat', async () => {
+        // mock confirm = true
+        window.confirm = jest.fn(() => true);
+        render(<Sidebar />);
+        // กดปุ่มลบอันแรก
+        const deleteButtons = screen.getAllByTitle('Delete chat');
+        fireEvent.click(deleteButtons[0]);
+        await waitFor(() => {
+            expect(mockFetchChatHistory).toHaveBeenCalledWith('user-123');
+            expect(mockSetActiveChat).toHaveBeenCalledWith(null, []);
+        });
+    });
+
+    it('Sidebar โหมดย่อแล้ว ไม่มีข้อความเมนูหลัก', async () => {
+        // จำลองขนาดหน้าจอเล็ก
+        window.innerWidth = 500;
+        render(<Sidebar />);
+        // Trigger resize event
+        window.dispatchEvent(new Event('resize'));
+
+        // เช็คว่า **ไม่มี** ข้อความเหล่านี้
+        await waitFor(() => {
+            expect(screen.queryByText('ซ่อนแถบด้านข้าง')).not.toBeInTheDocument();
+            expect(screen.queryByText('สร้างแชทใหม่')).not.toBeInTheDocument();
+            expect(screen.queryByText('ประวัติแชท')).not.toBeInTheDocument();
+        });
+    });
+
+    // it('กดปุ่มซ่อน/แสดง sidebar แล้ว sidebar กลับมาแสดง', async () => {
+    //     // เริ่มต้น sidebar เปิด
+    //     render(<Sidebar />);
+    //     // กดปุ่มซ่อน (อันแรกใน DOM)
+    //     const toggleBtn = screen.getByTestId("sidebar-toggle-hidden-show");
+    //     fireEvent.click(toggleBtn);
+
+    //     // ตอนนี้ควรจะเป็นโหมด "ย่อ" → ไม่เห็น "สร้างแชทใหม่"
+    //     await waitFor(() => {
+    //         expect(screen.queryByText('สร้างแชทใหม่')).not.toBeInTheDocument();
+    //     });
+
+    //     // กดปุ่มเดิมอีกรอบ เพื่อขยายกลับมา
+    //     fireEvent.click(toggleBtn);
+
+    //     // ตอนนี้ควรจะเห็น "สร้างแชทใหม่" อีกครั้ง
+    //     await waitFor(() => {
+    //         expect(screen.getByText('สร้างแชทใหม่')).toBeInTheDocument();
+    //     });
+    // });
+
 });

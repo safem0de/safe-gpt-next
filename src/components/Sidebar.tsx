@@ -108,6 +108,7 @@ export default function Sidebar() {
       {/* ปุ่ม Hamburger / Close */}
       <div className="px-3 overflow-y-auto">
         <button
+          data-testid="sidebar-toggle-hidden-show"
           className="w-full px-2 py-2 rounded hover:bg-gray-100 text-left text-gray-800 flex items-center gap-2 cursor-pointer"
           onClick={() => setOpen((v) => !v)}
         >
