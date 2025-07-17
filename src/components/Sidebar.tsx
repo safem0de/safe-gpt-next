@@ -48,6 +48,7 @@ export default function Sidebar() {
         title: `แชทใหม่ ${new Date().toLocaleString("th-TH")}`,
       }),
     });
+    
     const data = await res.json();
     if (data.success && data.chat) {
       // 2. อัปเดตหน้าจอให้เป็นแชทใหม่นี้

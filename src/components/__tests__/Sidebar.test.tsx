@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import Sidebar from '../Sidebar';
 
 jest.mock('@/contexts/LangContext', () => ({
@@ -7,6 +7,7 @@ jest.mock('@/contexts/LangContext', () => ({
 }));
 
 const mockSetActiveChat = jest.fn();
+const mockClearChat = jest.fn();
 const mockFetchChatHistory = jest.fn();
 const mockChatHistory = [
     { _id: 'chat-1', title: 'แชทที่ 1' },
@@ -15,13 +16,16 @@ const mockChatHistory = [
 
 jest.mock('@/store/chat-store', () => ({
     useChatStore: (selector: any) => selector({
-        setActiveChat: mockSetActiveChat,
-        fetchChatHistory: mockFetchChatHistory,
-        chatHistory: mockChatHistory,
         chatId: 'chat-1',
+        messages: [],
+        chatHistory: mockChatHistory,
+        setActiveChat: mockSetActiveChat,
+        clearChat: mockClearChat,
+        fetchChatHistory: mockFetchChatHistory,
         getState: () => ({
             chatId: 'chat-1',
             setActiveChat: mockSetActiveChat,
+            clearChat: mockClearChat,
         }),
     }),
 }));
@@ -44,7 +48,23 @@ describe('Sidebar', () => {
     it('renders Sidebar', async () => {
         render(<Sidebar />);
         await waitFor(() => {
+            expect(screen.getByText('ซ่อนแถบด้านข้าง')).toBeInTheDocument();
             expect(screen.getByText('สร้างแชทใหม่')).toBeInTheDocument();
+            expect(screen.getByText('ประวัติแชท')).toBeInTheDocument();
+        });
+    });
+
+    it('แสดงรายชื่อแชท', () => {
+        render(<Sidebar />);
+        expect(screen.getByText('แชทที่ 1')).toBeInTheDocument();
+        expect(screen.getByText('แชทที่ 2')).toBeInTheDocument();
+    });
+
+    it('กดแชทแล้วเรียก setActiveChat', async () => {
+        render(<Sidebar />);
+        fireEvent.click(screen.getByText('แชทที่ 1'));
+        await waitFor(() => {
+            expect(mockSetActiveChat).toHaveBeenCalled();
         });
     });
 });

@@ -86,3 +86,7 @@ tsconfig.json
   }
 }
 ```
+start test
+```bash
+npm test // set ใน package.json แล้ว
+```
