@@ -15,6 +15,7 @@ const CopyableCodeBlock: React.FC<CopyableCodeBlockProps> = ({ code, language })
       setTimeout(() => setCopied(false), 1500);
     } catch (err) {
       setCopied(false);
+      console.log(`CopyableCodeBlock Error: ${err}`);
     }
   };
 

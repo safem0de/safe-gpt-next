@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import Sidebar from '../Sidebar';
 
 jest.mock('@/contexts/LangContext', () => ({
@@ -95,11 +95,15 @@ describe('Sidebar', () => {
     });
 
     it('Sidebar โหมดย่อแล้ว ไม่มีข้อความเมนูหลัก', async () => {
-        // จำลองขนาดหน้าจอเล็ก
-        window.innerWidth = 500;
         render(<Sidebar />);
+
         // Trigger resize event
-        window.dispatchEvent(new Event('resize'));
+        // wrap ใน act
+        await act(async () => {
+            // จำลองขนาดหน้าจอเล็ก
+            window.innerWidth = 500;
+            window.dispatchEvent(new Event('resize'));
+        });
 
         // เช็คว่า **ไม่มี** ข้อความเหล่านี้
         await waitFor(() => {
@@ -130,6 +134,67 @@ describe('Sidebar', () => {
         // ตอนนี้ควรจะเห็น "สร้างแชทใหม่" อีกครั้ง
         await waitFor(() => {
             expect(screen.getByText('สร้างแชทใหม่')).toBeInTheDocument();
+        });
+    });
+
+    it('กดปุ่มลบแชท แต่ API error แล้วแสดง alert', async () => {
+        window.confirm = jest.fn(() => true);
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({ success: false, error: 'ลบไม่สำเร็จ' }),
+        });
+        window.alert = jest.fn();
+
+        render(<Sidebar />);
+        const deleteButtons = screen.getAllByTitle('Delete chat');
+        fireEvent.click(deleteButtons[0]);
+        await waitFor(() => {
+            expect(window.alert).toHaveBeenCalledWith('ลบไม่สำเร็จ');
+        });
+    });
+
+    it('กดลบแชทแต่ cancel ไม่ควรเรียก fetchChatHistory', async () => {
+        window.confirm = jest.fn(() => false);
+
+        render(<Sidebar />);
+        mockFetchChatHistory.mockClear();
+
+        const deleteButtons = screen.getAllByTestId("sidebar-delete-chat");
+
+        fireEvent.click(deleteButtons[0]);
+        await waitFor(() => {
+            expect(mockFetchChatHistory).not.toHaveBeenCalled();
+        });
+    });
+
+    it('handleSelectChat: กรณี data.success = false', async () => {
+        // mock fetch ให้ return success = false
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({ success: false }),
+        })) as any;
+
+        render(<Sidebar />);
+        fireEvent.click(screen.getByText('แชทที่ 1'));
+        // ไม่มี expect พิเศษเพราะ code ไม่ setActiveChat ในกรณีนี้
+    });
+
+    it('handleDeleteChat: ถ้า data.success = false จะ alert', async () => {
+        window.confirm = jest.fn(() => true);
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({ success: false, error: 'ลบไม่ได้' }),
+        })) as any;
+
+        window.alert = jest.fn();
+
+        render(<Sidebar />);
+        const deleteButtons = screen.getAllByTestId("sidebar-delete-chat");
+        fireEvent.click(deleteButtons[0]);
+        await waitFor(() => {
+            expect(window.alert).toHaveBeenCalledWith('ลบไม่ได้');
         });
     });
 

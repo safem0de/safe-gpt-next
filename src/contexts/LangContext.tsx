@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useMemo } from "react";
 
 type Lang = "th" | "en";
 
@@ -10,14 +10,17 @@ interface LangContextProps {
 
 const LangContext = createContext<LangContextProps>({
   lang: "th",
-  setLang: () => {},
+  setLang: () => { },
 });
 
 export const LangProvider = ({ children }: { children: React.ReactNode }) => {
   const [lang, setLang] = useState<Lang>("th");
 
+  // ใช้ useMemo เพื่อป้องกัน object ใหม่ทุก render
+  const value = useMemo(() => ({ lang, setLang }), [lang, setLang]);
+
   return (
-    <LangContext.Provider value={{ lang, setLang }}>
+    <LangContext.Provider value={value}>
       {children}
     </LangContext.Provider>
   );

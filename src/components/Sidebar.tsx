@@ -11,12 +11,10 @@ import {
   faBackward,
   faTrash
 } from "@fortawesome/free-solid-svg-icons";
-// import type { ChatHistory } from "@/types/chat";
 import { useChatStore } from "@/store/chat-store";
 
 export default function Sidebar() {
   const [open, setOpen] = useState(true);
-  // const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
   const setActiveChat = useChatStore((state) => state.setActiveChat);
   const { lang } = useLang();
   const t = lang === "th" ? TH : EN;
@@ -69,7 +67,7 @@ export default function Sidebar() {
         useChatStore.getState().setActiveChat(null, []);
       }
     } else {
-      alert(data.error || "ลบไม่สำเร็จ");
+      alert(data.error ?? "ลบไม่สำเร็จ");
     }
   }
 
@@ -142,6 +140,7 @@ export default function Sidebar() {
               </button>
               {/* ปุ่มลบ */}
               <button
+                data-testid="sidebar-delete-chat"
                 type="button"
                 className="ml-2 p-1 rounded hover:bg-red-100 text-gray-500 hover:text-red-600"
                 title="Delete chat"

@@ -2,13 +2,11 @@
 
 import { SITE } from "@/constants/site";
 import AvatarDropdown from "@/components/AvatarDropdown";
-import { TH, EN } from "@/constants/lang";
 import { useLang } from "@/contexts/LangContext";
 import { signOut } from "next-auth/react";
 
 export default function Navbar() {
   const { lang, setLang } = useLang();
-  const t = lang === "th" ? TH : EN;
 
   const handleLangToggle = () => {
     const newLang = lang === "th" ? "en" : "th";
