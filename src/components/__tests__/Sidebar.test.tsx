@@ -40,6 +40,10 @@ beforeAll(() => {
     );
 });
 
+beforeEach(() => {
+    window.innerWidth = 1200; // reset ทุก test
+});
+
 afterAll(() => {
     delete (global as any).fetch;
 });
@@ -105,25 +109,28 @@ describe('Sidebar', () => {
         });
     });
 
-    // it('กดปุ่มซ่อน/แสดง sidebar แล้ว sidebar กลับมาแสดง', async () => {
-    //     // เริ่มต้น sidebar เปิด
-    //     render(<Sidebar />);
-    //     // กดปุ่มซ่อน (อันแรกใน DOM)
-    //     const toggleBtn = screen.getByTestId("sidebar-toggle-hidden-show");
-    //     fireEvent.click(toggleBtn);
+    it('กดปุ่มซ่อน/แสดง sidebar แล้ว sidebar กลับมาแสดง', async () => {
+        // เริ่มต้น sidebar เปิด
+        render(<Sidebar />);
 
-    //     // ตอนนี้ควรจะเป็นโหมด "ย่อ" → ไม่เห็น "สร้างแชทใหม่"
-    //     await waitFor(() => {
-    //         expect(screen.queryByText('สร้างแชทใหม่')).not.toBeInTheDocument();
-    //     });
+        // ปุ่มซ่อน
+        const toggleBtn = screen.getByTestId("sidebar-toggle-hidden-show");
 
-    //     // กดปุ่มเดิมอีกรอบ เพื่อขยายกลับมา
-    //     fireEvent.click(toggleBtn);
+        // กดปุ่มซ่อน
+        fireEvent.click(toggleBtn);
 
-    //     // ตอนนี้ควรจะเห็น "สร้างแชทใหม่" อีกครั้ง
-    //     await waitFor(() => {
-    //         expect(screen.getByText('สร้างแชทใหม่')).toBeInTheDocument();
-    //     });
-    // });
+        // ตอนนี้ควรจะเป็นโหมด "ย่อ" → ไม่เห็น "สร้างแชทใหม่"
+        await waitFor(() => {
+            expect(screen.queryByText('สร้างแชทใหม่')).not.toBeInTheDocument();
+        });
+
+        // กดปุ่มเดิมอีกรอบ เพื่อขยายกลับมา
+        fireEvent.click(toggleBtn);
+
+        // ตอนนี้ควรจะเห็น "สร้างแชทใหม่" อีกครั้ง
+        await waitFor(() => {
+            expect(screen.getByText('สร้างแชทใหม่')).toBeInTheDocument();
+        });
+    });
 
 });
