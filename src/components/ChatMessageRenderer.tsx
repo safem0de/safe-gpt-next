@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
 import type { ChatMessage } from "../types/chat";
 import CopyableCodeBlock from "./CopyableCodeBlock";
+import { nanoid } from "nanoid";
 
 export function ChatMessageRenderer({
   content,
@@ -16,10 +17,10 @@ export function ChatMessageRenderer({
 
   return (
     <>
-      {content.map((c, i) =>
+      {content.map((c) =>
         c.type === "text" ? (
           <ReactMarkdown
-            key={i}
+            key={nanoid()}
             remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeSanitize]}
             components={{
@@ -91,7 +92,7 @@ export function ChatMessageRenderer({
           </ReactMarkdown>
         ) : (
           <img
-            key={i}
+            key={nanoid()}
             src={c.image}
             alt="uploaded"
             className="max-w-xs max-h-60 my-2"
