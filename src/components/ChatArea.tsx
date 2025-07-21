@@ -3,8 +3,6 @@
 "use client";
 import { useRef, useEffect } from "react";
 import ChatInput from "./ChatInput";
-// import { useLang } from "@/contexts/LangContext";
-// import { TH, EN } from "@/constants/lang";
 import { buildUserMessage } from "../utils/messageBuilder";
 import { ChatMessageRenderer } from "./ChatMessageRenderer";
 import { sendChat } from "../services/chatService";
@@ -14,9 +12,6 @@ import { useChatStore } from "@/store/chat-store";
 
 export default function ChatArea() {
   const bottomRef = useRef<HTMLDivElement | null>(null);
-  // const { lang } = useLang();
-  // const t = lang === "th" ? TH : EN;
-
   const chatId = useChatStore((s) => s.chatId);
   const messages = useChatStore((s) => s.messages);
   const setActiveChat = useChatStore((s) => s.setActiveChat);
