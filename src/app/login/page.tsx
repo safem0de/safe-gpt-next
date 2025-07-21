@@ -1,7 +1,5 @@
 "use client";
-import { signIn, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { signIn } from "next-auth/react";
 
 export default function LoginPage() {
   const handleFocusOrHover = (e: React.FocusEvent<HTMLButtonElement> | React.MouseEvent<HTMLButtonElement>) => {

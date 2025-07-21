@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
             chat = await Chat.create({
                 userId,
                 messages,
-                title: title ?? (messages?.[0]?.content?.[0]?.text || `สวัสดี ${createdate_text}`),
+                title: title ?? (messages?.[0]?.content?.[0]?.text ?? `สวัสดี ${createdate_text}`),
                 createdAt: new Date(),
                 updatedAt: new Date(),
             });

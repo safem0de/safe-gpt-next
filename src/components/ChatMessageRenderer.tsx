@@ -79,7 +79,7 @@ export function ChatMessageRenderer({
                   );
                 }
 
-                const language = className?.replace("language-", "") || "";
+                const language = className?.replace("language-", "") ?? "";
                 return (
                   <pre className="overflow-x-auto p-4 rounded-md text-sm bg-zinc-900 text-zinc-100 my-4 relative">
                     <CopyableCodeBlock code={codeStr} language={language} />

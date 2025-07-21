@@ -3,10 +3,9 @@
 "use client";
 import { useRef, useEffect } from "react";
 import ChatInput from "./ChatInput";
-import { useLang } from "@/contexts/LangContext";
-import { TH, EN } from "@/constants/lang";
+// import { useLang } from "@/contexts/LangContext";
+// import { TH, EN } from "@/constants/lang";
 import { buildUserMessage } from "../utils/messageBuilder";
-// import type { ChatMessage } from "../types/chat";
 import { ChatMessageRenderer } from "./ChatMessageRenderer";
 import { sendChat } from "../services/chatService";
 import { addOrUpdateChat } from '@/services/chatService';
@@ -14,11 +13,9 @@ import { useChatStore } from "@/store/chat-store";
 
 
 export default function ChatArea() {
-  // const [chatId, setChatId] = useState<string | null>(null);
-  // const [messages, setMessages] = useState<ChatMessage[]>([]);
   const bottomRef = useRef<HTMLDivElement | null>(null);
-  const { lang } = useLang();
-  const t = lang === "th" ? TH : EN;
+  // const { lang } = useLang();
+  // const t = lang === "th" ? TH : EN;
 
   const chatId = useChatStore((s) => s.chatId);
   const messages = useChatStore((s) => s.messages);
@@ -29,23 +26,6 @@ export default function ChatArea() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // const handleSend = async ({ text, imageFile, }: { text?: string; imageFile?: File; }) => {
-  //   if (!text && !imageFile) return;
-
-  //   const userMessage = await buildUserMessage({ text, imageFile });
-  //   setMessages((prev) => [...prev, userMessage]);
-
-  //   const assistantMessage = await sendChat([...messages, userMessage]);
-  //   setMessages((prev) => [...prev, assistantMessage]);
-
-  //   // await saveChatHistory('user-123', [...messages, userMessage, assistantMessage]);
-  //   const res = await addOrUpdateChat('user-123', [...messages, userMessage, assistantMessage], chatId);
-
-  //   // ถ้าเพิ่งสร้างใหม่จะได้ _id กลับมา เอามาเก็บใน state เพื่อใช้ update รอบถัดไป
-  //   if (res.success && res.chat && res.chat._id) {
-  //     setChatId(res.chat._id);
-  //   }
-  // };
   const handleSend = async ({ text, imageFile }: { text?: string; imageFile?: File; }) => {
     if (!text && !imageFile) return;
 
@@ -53,20 +33,20 @@ export default function ChatArea() {
     const newMessages = [...messages, userMessage];
 
     // 1. **อัปเดตเฉพาะ user message ให้แสดงทันที**
-    setActiveChat(chatId || "", newMessages);
+    setActiveChat(chatId ?? "", newMessages);
 
     // 2. เรียก API หา assistant (อาจโชว์ loading, หรือ dummy ai typing)
     const assistantMessage = await sendChat(newMessages);
 
     // 3. พอได้คำตอบ ค่อยอัปเดตแชทใน store (แสดง ai message)
     const allMessages = [...newMessages, assistantMessage];
-    setActiveChat(chatId || "", allMessages);
+    setActiveChat(chatId ?? "", allMessages);
 
     // 4. sync backend
     const res = await addOrUpdateChat('user-123', allMessages, chatId);
 
     // 5. กรณี chat ใหม่ เอา chatId ใหม่มา set ใน store
-    if (res.success && res.chat && res.chat._id && !chatId) {
+    if (res.success && res?.chat._id && !chatId) {
       setActiveChat(res.chat._id, allMessages);
       // ดึง history ใหม่ทันทีที่สร้างแชทแรก
       await fetchChatHistory('user-123');

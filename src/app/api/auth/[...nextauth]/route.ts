@@ -14,7 +14,7 @@ export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
   callbacks: {
     async jwt({ token, account }) {
-      if (account && account.access_token) {
+      if (account?.access_token) {
         // เพิ่ม access_token ที่ Keycloak ให้มาไว้ใน token
         token.accessToken = account.access_token;
       }

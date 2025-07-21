@@ -23,7 +23,7 @@ export default function AvatarDropdown({
   avatarUrl,
   menu,
   onLogout,
-}: AvatarDropdownProps) {
+}: Readonly<AvatarDropdownProps>) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const { lang } = useLang();
@@ -53,8 +53,7 @@ export default function AvatarDropdown({
           <div className="px-4 py-2 text-gray-800 text-sm border-b">
             <div className="font-medium truncate">{email}</div>
           </div>
-          {menu &&
-            menu.map((item, idx) => (
+          {menu?.map((item) => (
               <button
                 key={item.label}
                 onClick={item.onClick}
