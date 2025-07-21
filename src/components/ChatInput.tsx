@@ -3,14 +3,12 @@ import React, { useRef, useState } from "react";
 import { TH, EN } from "@/constants/lang";
 import { useLang } from "@/contexts/LangContext";
 
-export default function ChatInput({
-  onSend,
-  placeholder,
-}: {
-  // รับทั้ง text, image, หรือ text+image ใน message เดียว
+type ChatInputProps = Readonly<{
   onSend: (args: { text?: string; imageFile?: File }) => void;
   placeholder?: string;
-}) {
+}>;
+
+export default function ChatInput({ onSend, placeholder }: ChatInputProps) {
   const [value, setValue] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);

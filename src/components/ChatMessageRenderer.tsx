@@ -8,11 +8,11 @@ import type { ChatMessage } from "../types/chat";
 import CopyableCodeBlock from "./CopyableCodeBlock";
 import { nanoid } from "nanoid";
 
-export function ChatMessageRenderer({
-  content,
-}: {
+type ChatMessageRendererProps = Readonly<{
   content: ChatMessage["content"];
-}) {
+}>;
+
+export function ChatMessageRenderer({ content, }: ChatMessageRendererProps) {
   if (!Array.isArray(content)) return <div>{content}</div>;
 
   return (
