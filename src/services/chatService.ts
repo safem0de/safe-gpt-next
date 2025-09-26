@@ -1,10 +1,10 @@
 // services/chatService.ts
 import { ChatMessage } from "../types/chat";
 
-export async function sendChat(messages: ChatMessage[]): Promise<ChatMessage> {
+export async function sendChat(messages: ChatMessage[], useRag: boolean): Promise<ChatMessage> {
   const res = await fetch("/api/chat", {
     method: "POST",
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ messages, rag: useRag }),
   });
 
   const data = await res.json();

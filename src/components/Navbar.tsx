@@ -4,9 +4,12 @@ import { SITE } from "@/constants/site";
 import AvatarDropdown from "@/components/AvatarDropdown";
 import { useLang } from "@/contexts/LangContext";
 import { signOut } from "next-auth/react";
+import { useChatStore } from "@/store/chat-store";
 
 export default function Navbar() {
   const { lang, setLang } = useLang();
+  const ragEnabled = useChatStore((s) => s.ragEnabled);
+  const toggleRag = useChatStore((s) => s.toggleRag);
 
   const handleLangToggle = () => {
     const newLang = lang === "th" ? "en" : "th";
@@ -27,6 +30,12 @@ export default function Navbar() {
       >
         {SITE.title}
       </span>
+      <button
+        onClick={toggleRag}
+        className="px-3 py-1 rounded bg-slate-600 hover:bg-slate-500"
+      >
+        {ragEnabled ? "RAG Mode ✅" : "Normal Mode ❌"}
+      </button>
 
       <div className="ml-auto flex items-center gap-4">
         {/* Toggle Switch Language */}

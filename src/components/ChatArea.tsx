@@ -16,6 +16,7 @@ export default function ChatArea() {
   const messages = useChatStore((s) => s.messages);
   const setActiveChat = useChatStore((s) => s.setActiveChat);
   const fetchChatHistory = useChatStore((s) => s.fetchChatHistory);
+  const ragEnabled = useChatStore((s) => s.ragEnabled);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -31,7 +32,7 @@ export default function ChatArea() {
     setActiveChat(chatId ?? "", newMessages);
 
     // 2. เรียก API หา assistant (อาจโชว์ loading, หรือ dummy ai typing)
-    const assistantMessage = await sendChat(newMessages);
+    const assistantMessage = await sendChat(newMessages, ragEnabled);
 
     // 3. พอได้คำตอบ ค่อยอัปเดตแชทใน store (แสดง ai message)
     const allMessages = [...newMessages, assistantMessage];

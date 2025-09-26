@@ -7,15 +7,18 @@ interface ChatState {
     chatId: string | null;
     messages: ChatMessage[];
     chatHistory: ChatHistory[];
+    ragEnabled: boolean;
     setActiveChat: (id: string | null, messages: ChatMessage[]) => void;
     clearChat: () => void;
     fetchChatHistory: (userId: string) => Promise<void>;
+    toggleRag: () => void;
 }
 
 export const useChatStore = create<ChatState>((set) => ({
     chatId: null,
     messages: [],
     chatHistory: [],
+    ragEnabled: true,
     setActiveChat: (id, messages) => set({ chatId: id, messages }),
     clearChat: () => set({ chatId: null, messages: [] }),
     fetchChatHistory: async (userId) => {
@@ -25,4 +28,5 @@ export const useChatStore = create<ChatState>((set) => ({
             set({ chatHistory: data.chats });
         }
     },
+    toggleRag: () => set((s) => ({ ragEnabled: !s.ragEnabled })),
 }));
