@@ -75,7 +75,7 @@ SYSTEM """คุณคือแชทบอท AI ที่ช่วยเหล
       { role: "system", content: systemPrompt },
       ...recentMessages,
     ],
-    temperature: rag ? 0.4 : 0.7,
+    temperature: rag ? 0.4 : 0.5,
     maxTokens: 2048,
   });
 
