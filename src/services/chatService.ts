@@ -4,10 +4,21 @@ import { ChatMessage } from "../types/chat";
 export async function sendChat(messages: ChatMessage[], useRag: boolean): Promise<ChatMessage> {
   const res = await fetch("/api/chat", {
     method: "POST",
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ messages, rag: useRag }),
   });
 
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error("Chat API error:", res.status, errorText);
+    throw new Error(`Chat API failed: ${res.status} ${errorText}`);
+  }
+
   const data = await res.json();
+
+  if (data.success === false) {
+    throw new Error(data.error || "Failed to send chat");
+  }
 
   return {
     role: "assistant",
@@ -43,6 +54,12 @@ export async function addOrUpdateChat(userId: string,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error("Add/Update chat API error:", res.status, errorText);
+    throw new Error(`Failed to save chat: ${res.status} ${errorText}`);
+  }
 
   return await res.json();
 }

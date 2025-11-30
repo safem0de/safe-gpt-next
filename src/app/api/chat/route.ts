@@ -1,9 +1,16 @@
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
+import { requireAuth } from "@/utils/auth-helper";
+import { NextResponse } from "next/server";
 
 const AI_MODEL = process.env.AI_MODEL;
 
 export async function POST(req: Request) {
+  // ✅ Require authentication
+  const userIdOrError = await requireAuth();
+  if (userIdOrError instanceof NextResponse) {
+    return userIdOrError; // Return 401 error
+  }
   const { messages, rag } = await req.json();
   const lastMessage = messages[messages.length - 1];
   const userMessage = typeof lastMessage.content === "string"
@@ -69,18 +76,26 @@ SYSTEM """คุณคือแชทบอท AI ที่ช่วยเหล
 
   const systemPrompt = rag ? ragPrompt : nonRagPrompt;
   const recentMessages = messages.slice(-3); // ใช้แค่ 3 ข้อความล่าสุด
-  const result = await generateText({
-    model: google(AI_MODEL as string),
-    messages: [
-      { role: "system", content: systemPrompt },
-      ...recentMessages,
-    ],
-    temperature: rag ? 0.4 : 0.5,
-    maxTokens: 2048,
-  });
+  try {
+    const result = await generateText({
+      model: google(AI_MODEL as string),
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...recentMessages,
+      ],
+      temperature: rag ? 0.4 : 0.5,
+      maxTokens: 2048,
+    });
 
-  return Response.json({
-    text: result.text,
-    context, // ส่ง context กลับไปให้ frontend debug ได้
-  });
+    return Response.json({
+      text: result.text,
+      context, // ส่ง context กลับไปให้ frontend debug ได้
+    });
+  } catch (err: any) {
+    console.error("Error in POST /api/chat:", err);
+    return NextResponse.json(
+      { success: false, error: err.message || "Failed to generate response" },
+      { status: 500 }
+    );
+  }
 }
