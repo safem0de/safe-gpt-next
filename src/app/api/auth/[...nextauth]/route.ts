@@ -14,9 +14,11 @@ export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
   callbacks: {
     async jwt({ token, account, profile }) {
-      if (account?.access_token) {
-        // เพิ่ม access_token ที่ Keycloak ให้มาไว้ใน token
+      if (account) {
+        // เก็บ tokens จาก Keycloak
         token.accessToken = account.access_token;
+        token.idToken = account.id_token; // เพิ่ม id_token สำหรับ logout
+        token.refreshToken = account.refresh_token;
       }
       if (profile) {
         // เพิ่มข้อมูล profile จาก Keycloak
@@ -27,8 +29,10 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      // TypeScript fix: cast เป็น string | undefined
+      // เพิ่ม tokens ลงใน session
       session.accessToken = token.accessToken as string | undefined;
+      session.idToken = token.idToken as string | undefined; // สำหรับ logout
+
       // เพิ่มข้อมูล user ลงใน session
       if (session.user) {
         session.user.name = token.name as string | null;

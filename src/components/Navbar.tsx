@@ -19,17 +19,26 @@ export default function Navbar() {
   };
 
   const handleLogout = async () => {
+    const keycloakIssuer = process.env.NEXT_PUBLIC_KEYCLOAK_ISSUER || "http://localhost:8080/realms/safem0de-gpt";
+    const postLogoutRedirectUri = window.location.origin;
+
+    // Get id_token from session before signing out
+    const idToken = session?.idToken;
+
     // Logout from NextAuth first
     await signOut({ redirect: false });
 
-    // Then redirect to Keycloak logout URL
-    const keycloakLogoutUrl = process.env.NEXT_PUBLIC_KEYCLOAK_LOGOUT_URL;
-    if (keycloakLogoutUrl) {
-      window.location.href = keycloakLogoutUrl;
-    } else {
-      // Fallback to home page if no Keycloak logout URL
-      window.location.href = "/";
+    // Build Keycloak end_session endpoint URL
+    const logoutUrl = new URL(`${keycloakIssuer}/protocol/openid-connect/logout`);
+    logoutUrl.searchParams.append("post_logout_redirect_uri", postLogoutRedirectUri);
+
+    // Add id_token_hint if available (required by Keycloak)
+    if (idToken) {
+      logoutUrl.searchParams.append("id_token_hint", idToken);
     }
+
+    // Redirect to Keycloak logout
+    window.location.href = logoutUrl.toString();
   };
 
   return (

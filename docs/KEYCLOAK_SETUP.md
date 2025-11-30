@@ -11,7 +11,7 @@
 6. [ตั้งค่า Environment Variables](#4-ตั้งค่า-environment-variables)
 7. [ทดสอบ](#5-ทดสอบ)
 
----
+---****
 
 ## Prerequisites
 
@@ -120,12 +120,22 @@ docker-compose up -d
      ```
    - **Valid post logout redirect URIs**:
      ```
+     http://localhost:3000/*
      http://localhost:3000
+     +
      ```
+     **⚠️ สำคัญ!** ต้องใส่ทั้ง 3 แบบเพื่อให้ logout ทำงานได้ถูกต้อง
+     - `http://localhost:3000/*` - รองรับ wildcard
+     - `http://localhost:3000` - รองรับ exact match
+     - `+` - รองรับทุก redirect URI ที่อยู่ใน Valid redirect URIs
+
    - **Web origins**:
      ```
      http://localhost:3000
+     +
      ```
+     **หมายเหตุ:** `+` หมายถึงอนุญาตทุก origin ที่อยู่ใน Valid redirect URIs
+
    - คลิก **Save**
 
 ### 2.4 Get Client Secret
@@ -244,13 +254,44 @@ npm run dev
 
 ## 🔧 Troubleshooting
 
-### ปัญหา: Redirect URI mismatch
+### ปัญหา: Logout Error - Invalid parameter: redirect_uri
 
-**Error**: `Invalid parameter: redirect_uri`
+**Error**: `We are sorry... Invalid parameter: redirect_uri` ตอน logout
+
+**สาเหตุ**: Keycloak ไม่ยอมรับ `post_logout_redirect_uri` ที่ส่งไป
 
 **วิธีแก้**:
-1. เช็ค Valid redirect URIs ใน Keycloak Client settings
-2. ต้องมี: `http://localhost:3000/api/auth/callback/keycloak`
+1. ไปที่ Keycloak Admin Console → Clients → `safem0de-gpt-client`
+2. ตรวจสอบ **Valid post logout redirect URIs** ต้องมี:
+   ```
+   http://localhost:3000/*
+   http://localhost:3000
+   +
+   ```
+3. คลิก **Save**
+4. ตรวจสอบว่า `.env.local` มีค่า:
+   ```env
+   NEXT_PUBLIC_KEYCLOAK_ISSUER=http://localhost:8080/realms/safem0de-gpt
+   ```
+5. Restart Next.js dev server: `npm run dev`
+6. ลอง logout อีกครั้ง
+
+**หมายเหตุ**:
+- ใช้ `+` จะทำให้ Keycloak อนุญาตทุก URI ที่อยู่ใน Valid redirect URIs
+- ถ้ายังไม่ได้ ลองใส่ exact URL: `http://localhost:3000`
+
+### ปัญหา: Login Redirect URI mismatch
+
+**Error**: `Invalid parameter: redirect_uri` ตอน login
+
+**วิธีแก้**:
+1. เช็ค **Valid redirect URIs** ใน Keycloak Client settings
+2. ต้องมี:
+   ```
+   http://localhost:3000/*
+   http://localhost:3000/api/auth/callback/keycloak
+   ```
+3. คลิก **Save**
 
 ### ปัญหา: Client authentication failed
 
