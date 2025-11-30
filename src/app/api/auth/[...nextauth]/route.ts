@@ -11,7 +11,42 @@ export const authOptions: NextAuthOptions = {
       issuer: process.env.KEYCLOAK_ISSUER!,
     }),
   ],
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+
+  // Custom cookie configuration to prevent conflicts
+  cookies: {
+    sessionToken: {
+      name: `${process.env.NEXTAUTH_COOKIE_PREFIX || "safem0de-gpt"}.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+    callbackUrl: {
+      name: `${process.env.NEXTAUTH_COOKIE_PREFIX || "safem0de-gpt"}.callback-url`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+    csrfToken: {
+      name: `${process.env.NEXTAUTH_COOKIE_PREFIX || "safem0de-gpt"}.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
+
   callbacks: {
     async jwt({ token, account, profile }) {
       if (account) {

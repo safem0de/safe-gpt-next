@@ -4,8 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:staging": "next dev -p 3001",
+    "dev:prod": "next dev -p 3002",
     "build": "next build",
+    "build:staging": "NODE_ENV=staging next build",
+    "build:prod": "NODE_ENV=production next build",
     "start": "next start",
+    "start:staging": "next start -p 3001",
+    "start:prod": "next start -p 3002",
     "lint": "next lint",
     "test": "jest"
   },
