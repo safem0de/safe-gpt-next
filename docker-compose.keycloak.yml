@@ -1,0 +1,115 @@
+# Docker Compose for Keycloak Development
+# Usage: docker-compose -f docker-compose.keycloak.yml up -d
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database for Keycloak
+  keycloak-postgres:
+    image: postgres:15-alpine
+    container_name: safem0de-keycloak-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak_password
+    volumes:
+      - keycloak_postgres_data:/var/lib/postgresql/data
+    networks:
+      - keycloak-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Keycloak Server
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: safem0de-keycloak
+    restart: unless-stopped
+    environment:
+      # Admin Console Credentials
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+
+      # Database Configuration
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak_password
+
+      # Hostname Configuration
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_STRICT_HTTPS: false
+
+      # HTTP Configuration
+      KC_HTTP_ENABLED: true
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+
+      # Proxy Configuration (ถ้ารันหลัง reverse proxy)
+      # KC_PROXY: edge
+    ports:
+      - "8080:8080"
+    command:
+      - start-dev
+    depends_on:
+      keycloak-postgres:
+        condition: service_healthy
+    networks:
+      - keycloak-network
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+networks:
+  keycloak-network:
+    driver: bridge
+
+volumes:
+  keycloak_postgres_data:
+    driver: local
+
+# ============================================
+# 📝 วิธีใช้งาน:
+# ============================================
+#
+# 1. Start Keycloak:
+#    docker-compose -f docker-compose.keycloak.yml up -d
+#
+# 2. Check logs:
+#    docker-compose -f docker-compose.keycloak.yml logs -f keycloak
+#
+# 3. Stop Keycloak:
+#    docker-compose -f docker-compose.keycloak.yml down
+#
+# 4. Stop และลบ volumes (ข้อมูลหาย!):
+#    docker-compose -f docker-compose.keycloak.yml down -v
+#
+# 5. Access Keycloak Admin Console:
+#    URL: http://localhost:8080
+#    Username: admin
+#    Password: admin
+#
+# ============================================
+# 🔧 Configuration Notes:
+# ============================================
+#
+# - Keycloak รันในโหมด development (start-dev)
+# - Database: PostgreSQL 15
+# - Port: 8080
+# - Admin credentials: admin/admin
+# - Data จะ persist ใน Docker volume
+#
+# ⚠️ สำหรับ Production:
+# - เปลี่ยนเป็น start แทน start-dev
+# - ตั้ง KC_HOSTNAME_STRICT=true
+# - ใช้ HTTPS
+# - เปลี่ยน admin password
+# - ตั้งค่า KC_PROXY=edge ถ้ามี reverse proxy
+#
