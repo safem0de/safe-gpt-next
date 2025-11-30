@@ -5,7 +5,10 @@ const AI_MODEL = process.env.AI_MODEL;
 
 export async function POST(req: Request) {
   const { messages, rag } = await req.json();
-  const userMessage = messages[messages.length - 1].content[0].text;
+  const lastMessage = messages[messages.length - 1];
+  const userMessage = typeof lastMessage.content === "string"
+    ? lastMessage.content
+    : lastMessage.content[0].text || "";
 
   let context = "";
   if (rag) {
@@ -24,9 +27,11 @@ export async function POST(req: Request) {
     const ragJson = await ragRes.json();
 
     // ใช้ results ที่ backend ส่งมา
-    const matches = ragJson.results ?? ragJson.matches ?? [];
+    // const matches = ragJson.results ?? ragJson.matches ?? [];
+    const matches = ragJson.results ?? ragJson.matches ?? ragJson.data ?? [];
+    const filtered = matches.filter((r: any) => (r.rerank_score ?? r.score ?? 0) > 0.7);
     if (Array.isArray(matches) && matches.length > 0) {
-      context = matches
+      context = filtered
         .map((r: any) => {
           const page = r.payload?.page ?? "ไม่ทราบหน้า";
           const source = r.payload?.source ?? "";
@@ -34,9 +39,10 @@ export async function POST(req: Request) {
           const rerankScore = r.rerank_score ?? r.score ?? 0; // ใช้ rerank score ถ้ามี
           return `[แหล่ง: ${source}, หน้า: ${page}, คะแนน: ${rerankScore.toFixed(2)}]\n${r.payload?.text}\n\n${summary}`;
         })
-        .filter((t: string) => t)
+        .filter(Boolean) // กรอง string พวก undefined, null, '', 0, false ออกหมด
         .join("\n\n");
     }
+    console.log(`👍 RAG Response: ${matches.length} matches, context length:${context.length}`);
   }
 
   // 🎯 system prompt สำหรับ RAG mode
@@ -62,14 +68,14 @@ SYSTEM """คุณคือแชทบอท AI ที่ช่วยเหล
 `;
 
   const systemPrompt = rag ? ragPrompt : nonRagPrompt;
-
+  const recentMessages = messages.slice(-3); // ใช้แค่ 3 ข้อความล่าสุด
   const result = await generateText({
     model: google(AI_MODEL as string),
     messages: [
       { role: "system", content: systemPrompt },
-      ...messages,
+      ...recentMessages,
     ],
-    temperature: rag ? 0.5 : 0.7,
+    temperature: rag ? 0.4 : 0.5,
     maxTokens: 2048,
   });
 
