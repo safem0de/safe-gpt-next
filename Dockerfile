@@ -1,67 +1,33 @@
-# Multi-stage build for Next.js application
-# Stage 1: Dependencies
+# Stage 1: install full dependency tree (cached separately from source)
 FROM node:20-alpine AS deps
-
-# Install libc6-compat for Alpine compatibility
 RUN apk add --no-cache libc6-compat
-
 WORKDIR /app
-
-# Copy package files
 COPY package.json package-lock.json* ./
+RUN npm ci
 
-# Install dependencies
-RUN npm ci --only=production && \
-    npm cache clean --force
-
-# Stage 2: Builder
+# Stage 2: build the Next.js app with all dependencies available
 FROM node:20-alpine AS builder
-
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
-
-# Copy dependencies from deps stage
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-
-# Set environment to production
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-
-# Install all dependencies (including devDependencies) for build
-RUN npm install
-
-# Build Next.js application
 RUN npm run build
 
-# Stage 3: Runner
+# Stage 3: run the generated standalone server with a non-root user
 FROM node:20-alpine AS runner
-
-WORKDIR /app
-
-# Create non-root user for security
-RUN addgroup --system --gid 1001 nodejs && \
+RUN apk add --no-cache libc6-compat && \
+    addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
-
-# Set environment
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-
-# Copy necessary files from builder
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-
-# Set correct permissions
-RUN chown -R nextjs:nodejs /app
-
-# Switch to non-root user
+WORKDIR /app
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    PORT=3000 \
+    HOSTNAME=0.0.0.0
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 USER nextjs
-
-# Expose port
 EXPOSE 3000
-
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-
-# Start the application
 CMD ["node", "server.js"]
