@@ -9,6 +9,7 @@ env:
   IMAGE_NAME: safe-gpt-next
   REGISTRY: ghcr.io
   OWNER: ${{ github.repository_owner }}
+  REMOTE_APP_DIR: /home/ubuntu/app
 
 jobs:
   build-and-push:
@@ -38,7 +39,13 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
-            cd /home/ubuntu/app
+            APP_DIR=${REMOTE_APP_DIR:-/home/ubuntu/app}
+            mkdir -p "$APP_DIR"
+            cd "$APP_DIR"
+            if [ ! -f docker-compose.yml ]; then
+              echo "docker-compose.yml not found in $APP_DIR - please place your compose file and .env there."
+              exit 1
+            fi
             docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" -p "${{ secrets.GHCR_TOKEN }}"
             docker pull ghcr.io/${{ github.repository_owner }}/safe-gpt-next:latest
             docker compose down || true
