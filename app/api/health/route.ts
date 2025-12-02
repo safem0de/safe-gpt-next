@@ -1,0 +1,24 @@
+import { NextResponse } from 'next/server';
+
+export async function GET() {
+  try {
+    // You can add more health checks here
+    // For example: database connection, external API availability, etc.
+
+    return NextResponse.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: process.env.NODE_ENV || 'development',
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        status: 'error',
+        timestamp: new Date().toISOString(),
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    );
+  }
+}
