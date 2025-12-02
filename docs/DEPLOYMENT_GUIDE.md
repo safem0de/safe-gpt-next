@@ -38,3 +38,13 @@ docker run -d --name safe-gpt-next -p 3000:3000 safe-gpt-next
 - Example with inline vars (replace values):
   - `docker run -d --name safe-gpt-next -p 3000:3000 -e NEXTAUTH_SECRET=... -e NEXTAUTH_URL=http://localhost:3000 safe-gpt-next`
 - Generate a new secret for production: `./scripts/generate-secret.sh` (or `openssl rand -base64 32`).
+
+===============================
+สิ่งที่ต้องทำบน EC2 ก่อนรันอีกครั้ง:
+
+1. สร้างโฟลเดอร์ /home/ubuntu/app (หรือแก้ REMOTE_APP_DIR ให้ตรง แล้ว push เพื่อให้ workflow ใช้ค่าใหม่)
+
+2. วาง docker-compose.yml และ .env ไว้ในโฟลเดอร์นั้น
+3. ถ้ายังไม่มีสิทธิ์ docker ให้ sudo usermod -aG docker ubuntu แล้ว relogin
+
+ถ้า path ถูกต้องแล้ว กด Run workflow หรือ push ใหม่ก็จะไม่เจอ “No such file or directory” อีก.
