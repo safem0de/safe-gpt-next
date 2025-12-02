@@ -1,13 +1,14 @@
 // components/ChatArea.tsx
 
 "use client";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import ChatInput from "./ChatInput";
 import { buildUserMessage } from "../utils/messageBuilder";
 import { ChatMessageRenderer } from "./ChatMessageRenderer";
 import { sendChat } from "../services/chatService";
 import { addOrUpdateChat } from '@/services/chatService';
 import { useChatStore } from "@/store/chat-store";
+import AILoadingIndicator from "./AILoadingIndicator";
 
 
 export default function ChatArea() {
@@ -17,35 +18,48 @@ export default function ChatArea() {
   const setActiveChat = useChatStore((s) => s.setActiveChat);
   const fetchChatHistory = useChatStore((s) => s.fetchChatHistory);
   const ragEnabled = useChatStore((s) => s.ragEnabled);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, isLoading]);
 
   const handleSend = async ({ text, imageFile }: { text?: string; imageFile?: File; }) => {
     if (!text && !imageFile) return;
 
-    const userMessage = await buildUserMessage({ text, imageFile });
-    const newMessages = [...messages, userMessage];
+    try {
+      const userMessage = await buildUserMessage({ text, imageFile });
+      const newMessages = [...messages, userMessage];
 
-    // 1. **อัปเดตเฉพาะ user message ให้แสดงทันที**
-    setActiveChat(chatId ?? "", newMessages);
+      // 1. **อัปเดตเฉพาะ user message ให้แสดงทันที**
+      setActiveChat(chatId ?? "", newMessages);
 
-    // 2. เรียก API หา assistant (อาจโชว์ loading, หรือ dummy ai typing)
-    const assistantMessage = await sendChat(newMessages, ragEnabled);
+      // 2. เริ่ม loading
+      setIsLoading(true);
 
-    // 3. พอได้คำตอบ ค่อยอัปเดตแชทใน store (แสดง ai message)
-    const allMessages = [...newMessages, assistantMessage];
-    setActiveChat(chatId ?? "", allMessages);
+      // 3. เรียก API หา assistant
+      const assistantMessage = await sendChat(newMessages, ragEnabled);
 
-    // 4. sync backend
-    const res = await addOrUpdateChat('user-123', allMessages, chatId);
+      // 4. หยุด loading
+      setIsLoading(false);
 
-    // 5. กรณี chat ใหม่ เอา chatId ใหม่มา set ใน store
-    if (res.success && res?.chat._id && !chatId) {
-      setActiveChat(res.chat._id, allMessages);
-      // ดึง history ใหม่ทันทีที่สร้างแชทแรก
-      await fetchChatHistory('user-123');
+      // 5. พอได้คำตอบ ค่อยอัปเดตแชทใน store (แสดง ai message)
+      const allMessages = [...newMessages, assistantMessage];
+      setActiveChat(chatId ?? "", allMessages);
+
+      // 6. sync backend
+      const res = await addOrUpdateChat('user-123', allMessages, chatId);
+
+      // 7. กรณี chat ใหม่ เอา chatId ใหม่มา set ใน store
+      if (res.success && res?.chat._id && !chatId) {
+        setActiveChat(res.chat._id, allMessages);
+        // ดึง history ใหม่ทันทีที่สร้างแชทแรก
+        await fetchChatHistory('user-123');
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      setIsLoading(false);
+      // TODO: Show error message to user
     }
   };
 
@@ -69,6 +83,10 @@ export default function ChatArea() {
             </div>
           </div>
         ))}
+
+        {/* 👇 AI Loading Indicator */}
+        {isLoading && <AILoadingIndicator />}
+
         {/* 👇 ตำแหน่ง scroll ถึงสุดท้าย */}
         <div ref={bottomRef} />
       </div>
