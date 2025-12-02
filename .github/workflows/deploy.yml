@@ -3,6 +3,7 @@ name: CI-CD to EC2
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 env:
   IMAGE_NAME: safe-gpt-next
