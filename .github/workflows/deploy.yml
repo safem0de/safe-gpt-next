@@ -46,6 +46,8 @@ jobs:
               echo "docker-compose.yml not found in $APP_DIR - please place your compose file and .env there."
               exit 1
             fi
+            # set OWNER env for compose variable substitution
+            export OWNER="${OWNER:-${{ env.OWNER }}}"
             docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" -p "${{ secrets.GHCR_TOKEN }}"
             docker pull ghcr.io/${{ github.repository_owner }}/safe-gpt-next:latest
             # pick compose command (plugin or standalone)

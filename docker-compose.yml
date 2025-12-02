@@ -1,8 +1,7 @@
-version: "3.9"
-
 services:
   app:
-    image: ghcr.io/${OWNER:-your-gh-username}/safe-gpt-next:latest
+    # OWNER ต้องถูกตั้งไว้ใน environment (workflow จะ export OWNER จาก github.repository_owner)
+    image: ghcr.io/safem0de/safe-gpt-next:latest
     container_name: safe-gpt-next
     restart: unless-stopped
     env_file:
