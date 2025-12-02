@@ -38,8 +38,10 @@ export async function POST(req: Request) {
     // const matches = ragJson.results ?? ragJson.matches ?? [];
     const matches = ragJson.results ?? ragJson.matches ?? ragJson.data ?? [];
     const filtered = matches.filter((r: any) => (r.rerank_score ?? r.score ?? 0) > 0.7);
-    if (Array.isArray(matches) && matches.length > 0) {
-      context = filtered
+    const finalMatches = filtered.length > 0 ? filtered : matches;
+    if (Array.isArray(finalMatches) && finalMatches.length > 0) {
+      context = finalMatches
+        .slice(0, 8)
         .map((r: any) => {
           const page = r.payload?.page ?? "ไม่ทราบหน้า";
           const source = r.payload?.source ?? "";
@@ -47,7 +49,7 @@ export async function POST(req: Request) {
           const rerankScore = r.rerank_score ?? r.score ?? 0; // ใช้ rerank score ถ้ามี
           return `[แหล่ง: ${source}, หน้า: ${page}, คะแนน: ${rerankScore.toFixed(2)}]\n${r.payload?.text}\n\n${summary}`;
         })
-        .filter(Boolean) // กรอง string พวก undefined, null, '', 0, false ออกหมด
+        .filter(Boolean)
         .join("\n\n");
     }
     console.log(`👍 RAG Response: ${matches.length} matches, context length:${context.length}`);

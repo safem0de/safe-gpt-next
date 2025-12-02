@@ -9,6 +9,7 @@ import { sendChat } from "../services/chatService";
 import { addOrUpdateChat } from '@/services/chatService';
 import { useChatStore } from "@/store/chat-store";
 import AILoadingIndicator from "./AILoadingIndicator";
+import { useSession } from "next-auth/react";
 
 
 export default function ChatArea() {
@@ -19,6 +20,8 @@ export default function ChatArea() {
   const fetchChatHistory = useChatStore((s) => s.fetchChatHistory);
   const ragEnabled = useChatStore((s) => s.ragEnabled);
   const [isLoading, setIsLoading] = useState(false);
+  const { data: session } = useSession();
+  const userId = session?.user?.email || session?.user?.name || null;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -26,6 +29,10 @@ export default function ChatArea() {
 
   const handleSend = async ({ text, imageFile }: { text?: string; imageFile?: File; }) => {
     if (!text && !imageFile) return;
+    if (!userId) {
+      console.error("Cannot send message: user is not authenticated");
+      return;
+    }
 
     try {
       const userMessage = await buildUserMessage({ text, imageFile });
@@ -48,13 +55,13 @@ export default function ChatArea() {
       setActiveChat(chatId ?? "", allMessages);
 
       // 6. sync backend
-      const res = await addOrUpdateChat('user-123', allMessages, chatId);
+      const res = await addOrUpdateChat(userId, allMessages, chatId);
 
       // 7. กรณี chat ใหม่ เอา chatId ใหม่มา set ใน store
       if (res.success && res?.chat._id && !chatId) {
         setActiveChat(res.chat._id, allMessages);
         // ดึง history ใหม่ทันทีที่สร้างแชทแรก
-        await fetchChatHistory('user-123');
+        await fetchChatHistory(userId);
       }
     } catch (error) {
       console.error("Error sending message:", error);
