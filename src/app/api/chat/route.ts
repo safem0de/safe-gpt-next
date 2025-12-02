@@ -4,6 +4,7 @@ import { requireAuth } from "@/utils/auth-helper";
 import { NextResponse } from "next/server";
 
 const AI_MODEL = process.env.AI_MODEL;
+const RAG_API_BASE_URL = process.env.RAG_API_BASE_URL || "http://localhost:8000";
 
 export async function POST(req: Request) {
   // ✅ Require authentication
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
   if (rag) {
     // 🔹 ดึงข้อมูลจาก backend RAG API
     const ragRes = await fetch(
-      `http://localhost:8000/api/retrieve?query=${encodeURIComponent(
+      `${RAG_API_BASE_URL}/api/retrieve?query=${encodeURIComponent(
         userMessage
       )}&top_k=15`
     );
