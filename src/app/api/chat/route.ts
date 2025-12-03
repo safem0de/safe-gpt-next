@@ -1,17 +1,20 @@
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
 import { requireAuth } from "@/utils/auth-helper";
+import { getRagAccessToken } from "@/services/ragAuthService";
 import { NextResponse } from "next/server";
 
 const AI_MODEL = process.env.AI_MODEL;
 const RAG_API_BASE_URL = process.env.RAG_API_BASE_URL || "http://localhost:8000";
+const RAG_API_BEARER_TOKEN = process.env.RAG_API_BEARER_TOKEN;
 
 export async function POST(req: Request) {
-  // ✅ Require authentication
+  // Require authentication
   const userIdOrError = await requireAuth();
   if (userIdOrError instanceof NextResponse) {
     return userIdOrError; // Return 401 error
   }
+
   const { messages, rag } = await req.json();
   const lastMessage = messages[messages.length - 1];
   const userMessage = typeof lastMessage.content === "string"
@@ -19,66 +22,71 @@ export async function POST(req: Request) {
     : lastMessage.content[0].text || "";
 
   let context = "";
+
   if (rag) {
-    // 🔹 ดึงข้อมูลจาก backend RAG API
-    const ragRes = await fetch(
-      `${RAG_API_BASE_URL}/api/retrieve?query=${encodeURIComponent(
-        userMessage
-      )}&top_k=15`
-    );
+    const url = `${RAG_API_BASE_URL}/api/retrieve?query=${encodeURIComponent(
+      userMessage
+    )}&top_k=15`;
+
+    const buildHeaders = (token: string | null): HeadersInit => {
+      const headers: HeadersInit = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      return headers;
+    };
+
+    let token = await getRagAccessToken(false);
+    let ragRes = await fetch(url, { headers: buildHeaders(token) });
+
+    // Retry once on 401 in case token expired
+    if (ragRes.status === 401 && !RAG_API_BEARER_TOKEN) {
+      token = await getRagAccessToken(true);
+      ragRes = await fetch(url, { headers: buildHeaders(token) });
+    }
 
     if (!ragRes.ok) {
       const errText = await ragRes.text();
-      console.error("❌ Backend error:", errText);
+      console.error("Backend error:", ragRes.status, errText);
       throw new Error(`RAG API failed: ${errText}`);
     }
-    const ragJson = await ragRes.json();
 
-    // ใช้ results ที่ backend ส่งมา
-    // const matches = ragJson.results ?? ragJson.matches ?? [];
+    const ragJson = await ragRes.json();
     const matches = ragJson.results ?? ragJson.matches ?? ragJson.data ?? [];
     const filtered = matches.filter((r: any) => (r.rerank_score ?? r.score ?? 0) > 0.7);
     const finalMatches = filtered.length > 0 ? filtered : matches;
+
     if (Array.isArray(finalMatches) && finalMatches.length > 0) {
       context = finalMatches
         .slice(0, 8)
         .map((r: any) => {
-          const page = r.payload?.page ?? "ไม่ทราบหน้า";
+          const page = r.payload?.page ?? "unknown-page";
           const source = r.payload?.source ?? "";
           const summary = r.payload?.summary ?? "";
-          const rerankScore = r.rerank_score ?? r.score ?? 0; // ใช้ rerank score ถ้ามี
-          return `[แหล่ง: ${source}, หน้า: ${page}, คะแนน: ${rerankScore.toFixed(2)}]\n${r.payload?.text}\n\n${summary}`;
+          const rerankScore = r.rerank_score ?? r.score ?? 0;
+          return `[source: ${source}, page: ${page}, score: ${rerankScore.toFixed(2)}]\n${r.payload?.text}\n\n${summary}`;
         })
         .filter(Boolean)
         .join("\n\n");
     }
-    console.log(`👍 RAG Response: ${matches.length} matches, context length:${context.length}`);
+
+    console.log(`RAG Response: ${matches.length} matches, context length:${context.length}`);
   }
 
-  // 🎯 system prompt สำหรับ RAG mode
   const ragPrompt = `
-SYSTEM """คุณคือผู้ช่วย AI สำหรับเอกสาร
-- ใช้ข้อมูลจาก context ข้างล่างนี้เท่านั้น
-- ถ้าผู้ใช้ถาม ให้ระบุหน้าที่พบ และ source
-- ห้ามแต่งเรื่อง ห้ามเดาจากภายนอกเอกสาร
-- ทบทวนคำถามและเช็คอีกครั้งก่อนตอบ
-- ตอบเป็นภาษาไทย
-
-Context:
-${context}
+SYSTEM """คุณคือผู้ช่วยภาษาไทย ตอบโดยอ้างอิงข้อมูลใน Context ด้านล่างเท่านั้น
+- ต้องอ้างอิงที่มา (source) และหน้าหรือหัวข้อ (page) หากมีให้
+- หากข้อมูลไม่พอ ให้ตอบว่ายังไม่ทราบหรือข้อมูลไม่เพียงพอ
 """
 `;
 
-  // 🎯 system prompt สำหรับ Non-RAG mode
   const nonRagPrompt = `
-SYSTEM """คุณคือแชทบอท AI ที่ช่วยเหลือผู้ใช้
-- ตอบเป็นภาษาไทย
-- สามารถใช้ความรู้ทั่วไป ไม่จำกัดแค่ context
+SYSTEM """คุณคือผู้ช่วยภาษาไทยที่ตอบให้กระชับ ชัดเจน และเป็นประโยชน์
+- ถ้าไม่แน่ใจ ให้บอกว่ายังไม่แน่ใจ
 """
 `;
 
   const systemPrompt = rag ? ragPrompt : nonRagPrompt;
-  const recentMessages = messages.slice(-3); // ใช้แค่ 3 ข้อความล่าสุด
+  const recentMessages = messages.slice(-3); // keep recent messages small
+
   try {
     const result = await generateText({
       model: google(AI_MODEL as string),
@@ -92,7 +100,7 @@ SYSTEM """คุณคือแชทบอท AI ที่ช่วยเหล
 
     return Response.json({
       text: result.text,
-      context, // ส่ง context กลับไปให้ frontend debug ได้
+      context, // include context for frontend debug
     });
   } catch (err: any) {
     console.error("Error in POST /api/chat:", err);
