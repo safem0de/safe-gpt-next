@@ -3,6 +3,13 @@ import KeycloakProvider from "next-auth/providers/keycloak";
 
 const cookiePrefix = process.env.NEXTAUTH_COOKIE_PREFIX || "safem0de-gpt";
 const isProd = process.env.NODE_ENV === "production";
+const nextAuthUrl = process.env.NEXTAUTH_URL ?? "";
+let secureCookie = isProd && nextAuthUrl.startsWith("https://");
+if (process.env.NEXTAUTH_SECURE_COOKIE === "true") {
+  secureCookie = true;
+} else if (process.env.NEXTAUTH_SECURE_COOKIE === "false") {
+  secureCookie = false;
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -28,7 +35,7 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: isProd,
+        secure: secureCookie,
       },
     },
     callbackUrl: {
@@ -37,7 +44,7 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: isProd,
+        secure: secureCookie,
       },
     },
     csrfToken: {
@@ -46,7 +53,7 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: isProd,
+        secure: secureCookie,
       },
     },
     // ⭐ ตัวนี้แหละที่ขาดอยู่ → ทำให้ state cookie คนละโลกกับตัวอื่น
@@ -56,7 +63,7 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: isProd,
+        secure: secureCookie,
       },
     },
     // แถม pkce ให้ชื่อไปใน namespace เดียวกันด้วย (กันเพี้ยน)
@@ -66,7 +73,7 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: isProd,
+        secure: secureCookie,
       },
     },
   },
