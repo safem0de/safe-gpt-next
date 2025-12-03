@@ -12,9 +12,12 @@ services:
       proxy:
         aliases:
           - safe-gpt-next
+      mongodb_default:
 
 networks:
   app_default:
     driver: bridge
   proxy:
+    external: true
+  mongodb_default:
     external: true
