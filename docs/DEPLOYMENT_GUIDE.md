@@ -43,8 +43,36 @@ docker run -d --name safe-gpt-next -p 3000:3000 safe-gpt-next
 สิ่งที่ต้องทำบน EC2 ก่อนรันอีกครั้ง:
 
 1. สร้างโฟลเดอร์ /home/ubuntu/app (หรือแก้ REMOTE_APP_DIR ให้ตรง แล้ว push เพื่อให้ workflow ใช้ค่าใหม่)
-
 2. วาง docker-compose.yml และ .env ไว้ในโฟลเดอร์นั้น
 3. ถ้ายังไม่มีสิทธิ์ docker ให้ sudo usermod -aG docker ubuntu แล้ว relogin
 
 ถ้า path ถูกต้องแล้ว กด Run workflow หรือ push ใหม่ก็จะไม่เจอ “No such file or directory” อีก.
+
+===============================
+
+ods-chatbot (ods-chatbot.safemode.live)
+1. เมนู Proxy Hosts
+2. เลือก host ods-chatbot.safemode.live → กดปุ่มแก้ไข (ดินสอ)
+3. แท็บ Custom Nginx Configuration (รูปเฟืองขวาสุด)
+4. ใส่ config นี้ลงไปในกล่อง:
+```bash
+# ส่ง Host header จริงเข้า app ด้วย (กันแปลก ๆ)
+proxy_set_header Host $host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header X-Forwarded-Proto $scheme;
+
+# ขยาย buffer สำหรับ response header (แก้เคส Set-Cookie ใหญ่)
+proxy_buffer_size 16k;
+proxy_buffers 8 16k;
+proxy_busy_buffers_size 24k;
+
+# กัน timeout ช่วง auth
+proxy_read_timeout 300;
+proxy_connect_timeout 60;
+proxy_send_timeout 300;
+
+# กัน future เคส body ใหญ่
+client_max_body_size 10m;
+```
+5. กด Save
