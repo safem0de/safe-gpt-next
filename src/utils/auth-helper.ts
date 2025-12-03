@@ -13,7 +13,7 @@ export async function getAuthenticatedUser(): Promise<string | null> {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session?.user) {
       return null;
     }
 

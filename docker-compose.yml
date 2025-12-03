@@ -1,6 +1,5 @@
 services:
   app:
-    # OWNER ต้องถูกตั้งไว้ใน environment (workflow จะ export OWNER จาก github.repository_owner)
     image: ghcr.io/safem0de/safe-gpt-next:latest
     container_name: safe-gpt-next
     restart: unless-stopped
@@ -8,4 +7,14 @@ services:
       - .env
     ports:
       - "3000:3000"
-    # ถ้าต้องการเชื่อมต่อ RAG/Keycloak ที่อยู่นอกเครื่อง ให้ตั้งค่าใน .env (เช่น RAG_API_BASE_URL, KEYCLOAK_ISSUER)
+    networks:
+      app_default:
+      proxy:
+        aliases:
+          - safe-gpt-next
+
+networks:
+  app_default:
+    driver: bridge
+  proxy:
+    external: true
