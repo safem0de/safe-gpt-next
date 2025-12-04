@@ -3,6 +3,7 @@ export type ChatContent =
   | { type: "image"; image: string; mimeType: string };
 
 export type ChatMessage = {
+  id?: string;
   role: "user" | "assistant";
   content: ChatContent[];
 };

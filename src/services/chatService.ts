@@ -1,4 +1,5 @@
 // services/chatService.ts
+import { nanoid } from "nanoid";
 import { ChatMessage } from "../types/chat";
 
 export async function sendChat(messages: ChatMessage[], useRag: boolean): Promise<ChatMessage> {
@@ -21,6 +22,7 @@ export async function sendChat(messages: ChatMessage[], useRag: boolean): Promis
   }
 
   return {
+    id: nanoid(),
     role: "assistant",
     content: [{ type: "text", text: data.text }] as const,
   };

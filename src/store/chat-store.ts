@@ -1,6 +1,7 @@
 // store/chat-store.ts
 
 import { create } from "zustand";
+import { nanoid } from "nanoid";
 import type { ChatHistory, ChatMessage } from "@/types/chat";
 
 interface ChatState {
@@ -14,12 +15,15 @@ interface ChatState {
     toggleRag: () => void;
 }
 
+const withMessageIds = (messages: ChatMessage[]): ChatMessage[] =>
+    messages.map((msg) => (msg.id ? msg : { ...msg, id: nanoid() }));
+
 export const useChatStore = create<ChatState>((set) => ({
     chatId: null,
     messages: [],
     chatHistory: [],
     ragEnabled: true,
-    setActiveChat: (id, messages) => set({ chatId: id, messages }),
+    setActiveChat: (id, messages) => set({ chatId: id, messages: withMessageIds(messages) }),
     clearChat: () => set({ chatId: null, messages: [] }),
     fetchChatHistory: async (userId) => {
         const res = await fetch(`/api/chats?userId=${userId}`);

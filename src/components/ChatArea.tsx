@@ -9,6 +9,7 @@ import { sendChat } from "../services/chatService";
 import { addOrUpdateChat } from '@/services/chatService';
 import { useChatStore } from "@/store/chat-store";
 import AILoadingIndicator from "./AILoadingIndicator";
+import ChatWelcome from "./ChatWelcome";
 import { useSession } from "next-auth/react";
 
 
@@ -66,7 +67,6 @@ export default function ChatArea() {
     } catch (error) {
       console.error("Error sending message:", error);
       setIsLoading(false);
-      // TODO: Show error message to user
     }
   };
 
@@ -74,9 +74,10 @@ export default function ChatArea() {
   return (
     <div className="flex flex-col h-full relative bg-white">
       <div className="flex-1 overflow-y-auto p-4 pb-20 space-y-2">
-        {messages.map((msg, idx) => (
+        {messages.length === 0 && <ChatWelcome />}
+        {messages.map((msg) => (
           <div
-            key={idx}
+            key={msg.id ?? JSON.stringify(msg.content)}
             className={`flex mb-3 ${msg.role === "user" ? "justify-end" : "justify-start"
               }`}
           >

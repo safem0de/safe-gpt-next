@@ -1,3 +1,4 @@
+import { nanoid } from "nanoid";
 import { ChatContent, ChatMessage } from "../types/chat";
 import { toBase64 } from "./file";
 
@@ -26,6 +27,7 @@ export async function buildUserMessage({
   }
 
   return {
+    id: nanoid(),
     role: "user",
     content,
   };
