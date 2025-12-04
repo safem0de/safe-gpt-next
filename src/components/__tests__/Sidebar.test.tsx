@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import Sidebar from '../Sidebar';
 import { useSession } from 'next-auth/react';
+import type { Session } from 'next-auth';
 
 const getWindow = () => globalThis as unknown as Window & typeof globalThis;
 
@@ -14,6 +15,21 @@ jest.mock('next-auth/react', () => ({
 }));
 
 const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
+
+type AppSession = Session & { idToken?: string | null };
+
+const defaultSession: AppSession = {
+    user: { email: 'user-123' },
+    expires: new Date(Date.now() + 60_000).toISOString(),
+};
+
+const createSessionValue = (overrides?: Partial<ReturnType<typeof useSession>>) =>
+    ({
+        data: defaultSession,
+        status: 'authenticated',
+        update: jest.fn(),
+        ...overrides,
+    }) as ReturnType<typeof useSession>;
 
 const mockSetActiveChat = jest.fn();
 const mockClearChat = jest.fn();
@@ -55,10 +71,7 @@ beforeEach(() => {
 
     getWindow().innerWidth = 1200; // reset ทุก test
 
-    mockUseSession.mockReturnValue({
-        data: { user: { email: 'user-123' } },
-        status: 'authenticated',
-    });
+    mockUseSession.mockReturnValue(createSessionValue());
 });
 
 afterAll(() => {
@@ -79,6 +92,28 @@ describe('Sidebar', () => {
         render(<Sidebar />);
         expect(screen.getByText('แชทที่ 1')).toBeInTheDocument();
         expect(screen.getByText('แชทที่ 2')).toBeInTheDocument();
+    });
+
+    it('แสดงข้อความสถานะโหลดเมื่อ session ยังไม่เสร็จ', () => {
+    mockUseSession.mockReturnValue(createSessionValue({
+        data: null,
+        status: 'loading',
+    }));
+
+        render(<Sidebar />);
+        expect(screen.getByText('กำลังโหลด...')).toBeInTheDocument();
+        expect(screen.queryByText('สร้างแชทใหม่')).not.toBeInTheDocument();
+    });
+
+    it('แสดงข้อความให้เข้าสู่ระบบเมื่อไม่ authenticated', () => {
+    mockUseSession.mockReturnValue(createSessionValue({
+        data: null,
+        status: 'unauthenticated',
+    }));
+
+        render(<Sidebar />);
+        expect(screen.getByText('กรุณาเข้าสู่ระบบ')).toBeInTheDocument();
+        expect(screen.queryByText('สร้างแชทใหม่')).not.toBeInTheDocument();
     });
 
     it('กดแชทแล้วเรียก setActiveChat', async () => {

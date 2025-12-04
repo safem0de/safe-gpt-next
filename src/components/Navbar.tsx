@@ -5,6 +5,7 @@ import AvatarDropdown from "@/components/AvatarDropdown";
 import { useLang } from "@/contexts/LangContext";
 import { signOut, useSession } from "next-auth/react";
 import { useChatStore } from "@/store/chat-store";
+import { redirectTo } from "@/utils/navigation";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -38,7 +39,7 @@ export default function Navbar() {
     }
 
     // Redirect to Keycloak logout
-    window.location.href = logoutUrl.toString();
+    redirectTo(logoutUrl.toString());
   };
 
   return (
@@ -111,7 +112,7 @@ export default function Navbar() {
         )}
         {status === "unauthenticated" && (
           <button
-            onClick={() => window.location.href = "/api/auth/signin"}
+            onClick={() => redirectTo("/api/auth/signin")}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             {lang === "th" ? "เข้าสู่ระบบ" : "Sign In"}

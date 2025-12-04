@@ -15,23 +15,31 @@ jest.mock('@/services/chatService', () => ({
   addOrUpdateChat: (...args: unknown[]) => mockAddOrUpdateChat(...args),
 }));
 
-const MockChatInput = ({ onSend }: { onSend: (args: { text?: string }) => void }) => (
-  <button data-testid="chat-input-send" onClick={() => onSend({ text: 'ขอคำตอบ' })}>
-    ส่งข้อความ
-  </button>
-);
+function MockChatInput({ onSend }: Readonly<{ onSend: (args: { text?: string }) => void }>) {
+  return (
+    <button data-testid="chat-input-send" onClick={() => onSend({ text: 'ขอคำตอบ' })}>
+      ส่งข้อความ
+    </button>
+  );
+}
 
-const MockChatMessageRenderer = ({ content }: { content: any[] }) => (
-  <div data-testid="chat-message">
-    {Array.isArray(content)
-      ? content.map((c) => (c.type === 'text' ? c.text : 'image')).join(' / ')
-      : String(content)}
-  </div>
-);
+function MockChatMessageRenderer({ content }: Readonly<{ content: any[] }>) {
+  return (
+    <div data-testid="chat-message">
+      {Array.isArray(content)
+        ? content.map((c) => (c.type === 'text' ? c.text : 'image')).join(' / ')
+        : String(content)}
+    </div>
+  );
+}
 
-const MockChatWelcome = () => <div data-testid="chat-welcome">สวัสดี!</div>;
+function MockChatWelcome() {
+  return <div data-testid="chat-welcome">สวัสดี!</div>;
+}
 
-const MockAILoadingIndicator = () => <div data-testid="ai-loading-indicator">กำลังคิด...</div>;
+function MockAILoadingIndicator() {
+  return <div data-testid="ai-loading-indicator">กำลังคิด...</div>;
+}
 
 jest.mock('../ChatInput', () => ({
   __esModule: true,
@@ -78,6 +86,17 @@ let storeState: StoreState;
 
 const useChatStoreMock = (selector: (state: StoreState) => unknown) => selector(storeState);
 useChatStoreMock.getState = () => storeState;
+
+const createDeferredResponse = <T,>(value: T) => {
+  let resolver: (() => void) | null = null;
+  const promise = new Promise<T>((resolve) => {
+    resolver = () => resolve(value);
+  });
+  return {
+    promise,
+    resolve: () => resolver?.(),
+  };
+};
 
 jest.mock('@/store/chat-store', () => ({
   useChatStore: (selector: (state: StoreState) => unknown) => useChatStoreMock(selector),
@@ -172,13 +191,8 @@ describe('ChatArea', () => {
 
     mockBuildUserMessage.mockResolvedValueOnce(userMessage);
 
-    let resolveAssistant: (() => void) | undefined;
-    mockSendChat.mockImplementationOnce(
-      () =>
-        new Promise((resolve) => {
-          resolveAssistant = () => resolve(assistantMessage);
-        }),
-    );
+    const deferredAssistant = createDeferredResponse(assistantMessage);
+    mockSendChat.mockImplementationOnce(() => deferredAssistant.promise);
     mockAddOrUpdateChat.mockResolvedValueOnce({ success: true, chat: { _id: 'existing-chat' } });
 
     render(<ChatArea />);
@@ -189,7 +203,7 @@ describe('ChatArea', () => {
     });
 
     act(() => {
-      resolveAssistant?.();
+      deferredAssistant.resolve();
     });
 
     await waitFor(() => {
