@@ -65,9 +65,29 @@ export default function Sidebar() {
     }
   }
 
+  const getGlobalWindow = () =>
+    typeof globalThis === "undefined" ? null : (globalThis as Window & typeof globalThis);
+
+  const confirmDelete = () => {
+    const target = getGlobalWindow();
+    if (target?.confirm) {
+      return target.confirm("ต้องการลบแชทนี้จริงหรือไม่?");
+    }
+    return true;
+  };
+
+  const alertError = (message: string) => {
+    const target = getGlobalWindow();
+    if (target?.alert) {
+      target.alert(message);
+    } else {
+      console.error(message);
+    }
+  };
+
   async function handleDeleteChat(chatId: string) {
     if (!userId) return; // ต้อง login ก่อน
-    if (!confirm("ต้องการลบแชทนี้จริงหรือไม่?")) return;
+    if (!confirmDelete()) return;
     const res = await fetch(`/api/chats/${chatId}`, { method: "DELETE" });
     const data = await res.json();
     if (data.success) {
@@ -77,14 +97,16 @@ export default function Sidebar() {
         useChatStore.getState().setActiveChat(null, []);
       }
     } else {
-      alert(data.error ?? "ลบไม่สำเร็จ");
+      alertError(data.error ?? "ลบไม่สำเร็จ");
     }
   }
 
   // เพิ่ม auto collapse เมื่อจอเล็ก
   useEffect(() => {
+    const target = getGlobalWindow();
+
     function handleResize() {
-      if (window.innerWidth < 640) { // ใช้ breakpoint sm (640px)
+      if (target && target.innerWidth < 640) { // ใช้ breakpoint sm (640px)
         setOpen(false);
       } else {
         // setOpen(true); // ไม่ต้องทำอะไรเลย
@@ -92,10 +114,79 @@ export default function Sidebar() {
     }
     handleResize(); // เรียกครั้งแรกตอน mount
 
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    target?.addEventListener?.("resize", handleResize);
+    return () => target?.removeEventListener?.("resize", handleResize);
   }, []);
 
+
+  const renderMainContent = () => {
+    if (status === "loading") {
+      return (
+        <div className="text-center py-8">
+          {open && (
+            <div className="text-gray-500 text-sm">
+              <p>{lang === "th" ? "กำลังโหลด..." : "Loading..."}</p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (status === "authenticated") {
+      return (
+        <>
+          <button
+            className="w-full px-2 py-2 rounded hover:bg-gray-100 text-left text-gray-800 flex items-center gap-2 cursor-pointer"
+            onClick={handleCreateNewChat}
+          >
+            <FontAwesomeIcon icon={faComments} className="w-4" />
+            {open && t.createnewchat}
+          </button>
+          <hr className="my-3" />
+          <div className="text-xs text-gray-500 mb-2">{open && t.chathistory}</div>
+          <ul className="space-y-2">
+            {open && (chatHistory || []).map((chat) => (
+              <li
+                key={chat._id}
+                className="truncate cursor-pointer p-2 rounded hover:bg-blue-100 text-black flex items-center justify-between"
+                title={chat.title}
+              >
+                <button
+                  className="flex-1 truncate text-left"
+                  onClick={() => handleSelectChat(chat._id)}
+                >
+                  {open && chat.title}
+                </button>
+                {/* ปุ่มลบ */}
+                <button
+                  data-testid="sidebar-delete-chat"
+                  type="button"
+                  className="ml-2 p-1 rounded hover:bg-red-100 text-gray-500 hover:text-red-600"
+                  title="Delete chat"
+                  onClick={e => {
+                    e.stopPropagation(); // กันไม่ให้ onClick แถว chat trigger
+                    handleDeleteChat(chat._id);
+                  }}
+                >
+                  <FontAwesomeIcon icon={faTrash} className="w-4" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      );
+    }
+
+    return (
+      <div className="text-center py-8">
+        {open && (
+          <div className="text-gray-500 text-sm">
+            <p className="mb-4">{lang === "th" ? "กรุณาเข้าสู่ระบบ" : "Please sign in"}</p>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <aside
@@ -119,64 +210,7 @@ export default function Sidebar() {
         </button>
       </div>
       <div className="p-3 flex-1 overflow-y-auto">
-        {status === "loading" ? (
-          <div className="text-center py-8">
-            {open && (
-              <div className="text-gray-500 text-sm">
-                <p>{lang === "th" ? "กำลังโหลด..." : "Loading..."}</p>
-              </div>
-            )}
-          </div>
-        ) : status === "authenticated" ? (
-          <>
-            <button
-              className="w-full px-2 py-2 rounded hover:bg-gray-100 text-left text-gray-800 flex items-center gap-2 cursor-pointer"
-              onClick={handleCreateNewChat}
-            >
-              <FontAwesomeIcon icon={faComments} className="w-4" />
-              {open && t.createnewchat}
-            </button>
-            <hr className="my-3" />
-            <div className="text-xs text-gray-500 mb-2">{open && t.chathistory}</div>
-            <ul className="space-y-2">
-              {open && (chatHistory || []).map((chat) => (
-                <li
-                  key={chat._id}
-                  className="truncate cursor-pointer p-2 rounded hover:bg-blue-100 text-black flex items-center justify-between"
-                  title={chat.title}
-                >
-                  <button
-                    className="flex-1 truncate text-left"
-                    onClick={() => handleSelectChat(chat._id)}
-                  >
-                    {open && chat.title}
-                  </button>
-                  {/* ปุ่มลบ */}
-                  <button
-                    data-testid="sidebar-delete-chat"
-                    type="button"
-                    className="ml-2 p-1 rounded hover:bg-red-100 text-gray-500 hover:text-red-600"
-                    title="Delete chat"
-                    onClick={e => {
-                      e.stopPropagation(); // กันไม่ให้ onClick แถว chat trigger
-                      handleDeleteChat(chat._id);
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faTrash} className="w-4" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </>
-        ) : (
-          <div className="text-center py-8">
-            {open && (
-              <div className="text-gray-500 text-sm">
-                <p className="mb-4">{lang === "th" ? "กรุณาเข้าสู่ระบบ" : "Please sign in"}</p>
-              </div>
-            )}
-          </div>
-        )}
+        {renderMainContent()}
       </div>
     </aside>
   );

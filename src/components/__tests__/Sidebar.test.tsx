@@ -1,10 +1,19 @@
 import React from 'react';
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import Sidebar from '../Sidebar';
+import { useSession } from 'next-auth/react';
+
+const getWindow = () => globalThis as unknown as Window & typeof globalThis;
 
 jest.mock('@/contexts/LangContext', () => ({
     useLang: () => ({ lang: 'th' }),
 }));
+
+jest.mock('next-auth/react', () => ({
+    useSession: jest.fn(),
+}));
+
+const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
 
 const mockSetActiveChat = jest.fn();
 const mockClearChat = jest.fn();
@@ -30,22 +39,30 @@ jest.mock('@/store/chat-store', () => ({
     useChatStore: useChatStoreMock,
 }));
 
-beforeAll(() => {
-    global.fetch = jest.fn(() =>
+let fetchMock: jest.Mock;
+
+beforeEach(() => {
+    jest.clearAllMocks();
+
+    fetchMock = jest.fn(() =>
         Promise.resolve({
             ok: true,
             status: 200,
             json: () => Promise.resolve({ success: true, chats: mockChatHistory, chat: { messages: ['msg'] } }),
         } as unknown as Response)
     );
-});
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
 
-beforeEach(() => {
-    window.innerWidth = 1200; // reset ทุก test
+    getWindow().innerWidth = 1200; // reset ทุก test
+
+    mockUseSession.mockReturnValue({
+        data: { user: { email: 'user-123' } },
+        status: 'authenticated',
+    });
 });
 
 afterAll(() => {
-    delete (global as any).fetch;
+    delete (globalThis as any).fetch;
 });
 
 describe('Sidebar', () => {
@@ -83,7 +100,7 @@ describe('Sidebar', () => {
 
     it('กดปุ่ม "ลบแชท" แล้วเรียก fetchChatHistory และ setActiveChat', async () => {
         // mock confirm = true
-        window.confirm = jest.fn(() => true);
+        (globalThis as any).confirm = jest.fn(() => true);
         render(<Sidebar />);
         // กดปุ่มลบอันแรก
         const deleteButtons = screen.getAllByTitle('Delete chat');
@@ -101,8 +118,8 @@ describe('Sidebar', () => {
         // wrap ใน act
         await act(async () => {
             // จำลองขนาดหน้าจอเล็ก
-            window.innerWidth = 500;
-            window.dispatchEvent(new Event('resize'));
+            getWindow().innerWidth = 500;
+            getWindow().dispatchEvent(new Event('resize'));
         });
 
         // เช็คว่า **ไม่มี** ข้อความเหล่านี้
@@ -138,23 +155,23 @@ describe('Sidebar', () => {
     });
 
     it('กดปุ่มลบแชท แต่ API error แล้วแสดง alert', async () => {
-        window.confirm = jest.fn(() => true);
-        (global.fetch as jest.Mock).mockResolvedValueOnce({
+        (globalThis as any).confirm = jest.fn(() => true);
+        (globalThis.fetch as jest.Mock).mockResolvedValueOnce({
             ok: true,
             json: async () => ({ success: false, error: 'ลบไม่สำเร็จ' }),
         });
-        window.alert = jest.fn();
+        (globalThis as any).alert = jest.fn();
 
         render(<Sidebar />);
         const deleteButtons = screen.getAllByTitle('Delete chat');
         fireEvent.click(deleteButtons[0]);
         await waitFor(() => {
-            expect(window.alert).toHaveBeenCalledWith('ลบไม่สำเร็จ');
+            expect(globalThis.alert).toHaveBeenCalledWith('ลบไม่สำเร็จ');
         });
     });
 
     it('กดลบแชทแต่ cancel ไม่ควรเรียก fetchChatHistory', async () => {
-        window.confirm = jest.fn(() => false);
+        (globalThis as any).confirm = jest.fn(() => false);
 
         render(<Sidebar />);
         mockFetchChatHistory.mockClear();
@@ -169,11 +186,11 @@ describe('Sidebar', () => {
 
     it('handleSelectChat: กรณี data.success = false', async () => {
         // mock fetch ให้ return success = false
-        global.fetch = jest.fn(() => Promise.resolve({
+        (globalThis.fetch as jest.Mock).mockResolvedValueOnce({
             ok: true,
             status: 200,
-            json: () => Promise.resolve({ success: false }),
-        })) as any;
+            json: async () => ({ success: false }),
+        });
 
         render(<Sidebar />);
         fireEvent.click(screen.getByText('แชทที่ 1'));
@@ -181,20 +198,20 @@ describe('Sidebar', () => {
     });
 
     it('handleDeleteChat: ถ้า data.success = false จะ alert', async () => {
-        window.confirm = jest.fn(() => true);
-        global.fetch = jest.fn(() => Promise.resolve({
+        (globalThis as any).confirm = jest.fn(() => true);
+        (globalThis.fetch as jest.Mock).mockResolvedValueOnce({
             ok: true,
             status: 200,
-            json: () => Promise.resolve({ success: false, error: 'ลบไม่ได้' }),
-        })) as any;
+            json: async () => ({ success: false, error: 'ลบไม่ได้' }),
+        });
 
-        window.alert = jest.fn();
+        (globalThis as any).alert = jest.fn();
 
         render(<Sidebar />);
         const deleteButtons = screen.getAllByTestId("sidebar-delete-chat");
         fireEvent.click(deleteButtons[0]);
         await waitFor(() => {
-            expect(window.alert).toHaveBeenCalledWith('ลบไม่ได้');
+            expect(globalThis.alert).toHaveBeenCalledWith('ลบไม่ได้');
         });
     });
 
