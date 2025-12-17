@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(openssl rand:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(docker stats:*)"
     ],
     "deny": [],
     "ask": []
