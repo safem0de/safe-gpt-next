@@ -5,6 +5,7 @@ const RAG_USER = process.env.RAG_USER;
 const RAG_PASS = process.env.RAG_PASS;
 const RAG_AUTH_URL = process.env.RAG_AUTH_URL || `${RAG_API_BASE_URL}/auth/login`;
 const RAG_TOP_K = parseInt(process.env.RAG_TOP_K || "8", 10);
+const RAG_TIMEOUT = parseInt(process.env.RAG_TIMEOUT || "20000", 10);
 
 type RagTokenCache = {
   token: string;
@@ -102,7 +103,7 @@ export async function fetchRagContext(userMessage: string): Promise<string> {
     const headers = await buildRagHeaders();
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const timeoutId = setTimeout(() => controller.abort(), RAG_TIMEOUT);
 
     const ragRes = await fetch(
       `${RAG_API_BASE_URL}/api/retrieve?query=${encodeURIComponent(
@@ -128,7 +129,7 @@ export async function fetchRagContext(userMessage: string): Promise<string> {
     return context;
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
-      console.error("❌ RAG request timeout after 10s");
+      console.error(`❌ RAG request timeout after ${RAG_TIMEOUT}ms`);
     } else {
       console.error("❌ Backend error:", error);
     }
